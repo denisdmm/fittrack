@@ -8,7 +8,7 @@
 
 import { ai } from '@/ai/genkit';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { db } from '@/firebase/config';
 import { initializeFirebase } from '@/firebase';
 
@@ -30,6 +30,7 @@ const seedAdminUserFlow = ai.defineFlow(
     const adminEmail = 'admin@fittrack.app';
     const adminPassword = 'admin';
     
+    // Use the central initializeFirebase to get a consistent auth instance
     const { auth } = initializeFirebase();
 
     // Check if the user document already exists in Firestore by the 'login' field
@@ -44,9 +45,22 @@ const seedAdminUserFlow = ai.defineFlow(
     try {
       console.log("seedAdminUserFlow: Attempting to create admin user in Firebase Auth...");
       
-      const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+      // We first sign in to see if the user exists in Auth, if not, create it.
+      let userCredential;
+      try {
+        userCredential = await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+      } catch (error: any) {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+          console.log("seedAdminUserFlow: Admin user not found in Auth, creating...");
+          userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+        } else {
+          // Rethrow other auth errors
+          throw error;
+        }
+      }
+
       const user = userCredential.user;
-      console.log(`seedAdminUserFlow: Admin user created in Auth with UID: ${user.uid}`);
+      console.log(`seedAdminUserFlow: Admin user confirmed in Auth with UID: ${user.uid}`);
 
       const userDocRef = doc(db, 'users', user.uid);
       
@@ -55,28 +69,18 @@ const seedAdminUserFlow = ai.defineFlow(
         firstName: 'Admin',
         lastName: 'User',
         login: adminLogin,
-        email: adminEmail,
+        email: adminEmail, // Ensure email is saved
         role: 'admin' as const,
       };
       
       await setDoc(userDocRef, userData);
-      console.log("seedAdminUserFlow: Admin user document created in Firestore.");
+      console.log("seedAdminUserFlow: Admin user document created/verified in Firestore.");
       
       return { status: "success", message: "Admin user created successfully." };
 
     } catch (error: any) {
-      if (error.code === 'auth/email-already-in-use') {
-        console.warn("seedAdminUserFlow: Admin user already exists in Firebase Auth. Skipping Auth creation. Verifying Firestore doc.");
-        
-        // If auth user exists, but we didn't find the doc earlier, it means the doc is missing.
-        // We need to find the user by email to get the UID and create the doc.
-        // NOTE: This requires admin privileges in a real app. For this dev setup, it's a workaround.
-        // A better approach in prod is a callable function to sync this.
-        return { status: "skipped", message: "Admin user already in Auth, but doc might be missing. Manual check needed if login fails." };
-      } else {
-        console.error("seedAdminUserFlow: Error creating admin user:", error);
-        return { status: "error", message: `An unexpected error occurred: ${error.message}` };
-      }
+      console.error("seedAdminUserFlow: Error creating or verifying admin user:", error);
+      return { status: "error", message: `An unexpected error occurred: ${error.message}` };
     }
   }
 );
