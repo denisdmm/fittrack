@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlusCircle, Search } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { collection } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
@@ -20,10 +20,14 @@ import { Input } from '@/components/ui/input';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Workout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { WorkoutForm } from './_components/workout-form';
 
 
 export default function WorkoutsPage() {
     const firestore = useFirestore();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
 
     const workoutsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
@@ -49,10 +53,23 @@ export default function WorkoutsPage() {
                 className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
               />
             </div>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Criar Treino
-            </Button>
+             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Criar Treino
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl">
+                  <DialogHeader>
+                      <DialogTitle>Criar Novo Treino</DialogTitle>
+                      <DialogDescription>
+                          Preencha os detalhes para criar uma nova rotina de treino.
+                      </DialogDescription>
+                  </DialogHeader>
+                  <WorkoutForm onFinished={() => setIsDialogOpen(false)} />
+              </DialogContent>
+            </Dialog>
         </div>
       </div>
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

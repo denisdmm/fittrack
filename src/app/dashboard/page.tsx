@@ -1,5 +1,5 @@
 'use client';
-import { BarChart, Dumbbell, Activity, Calendar } from 'lucide-react';
+import { BarChart, Dumbbell, Activity, Calendar, PlusCircle } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -18,8 +18,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
-import type { ProgressRecord } from '@/lib/types';
-import { useMemo } from 'react';
+import type { ProgressRecord, Workout } from '@/lib/types';
+import { useMemo, useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { WorkoutForm } from './workouts/_components/workout-form';
 
 const chartConfig = {
   volume: {
@@ -31,6 +33,7 @@ const chartConfig = {
 export default function DashboardPage() {
   const { user } = useAppContext();
   const firestore = useFirestore();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const progressCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
@@ -139,14 +142,28 @@ export default function DashboardPage() {
             <p className="text-sm text-muted-foreground">
                 Pronto para suar? Pegue um treino predefinido ou crie um que se alinhe perfeitamente com seus objetivos de hoje.
             </p>
-            <div className="flex gap-4">
-                <Button asChild className="w-full">
-                    <Link href="/dashboard/workouts">Ver Biblioteca</Link>
-                </Button>
-                <Button variant="outline" className="w-full">
-                    Criar Treino
-                </Button>
-            </div>
+             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <div className="flex gap-4">
+                    <Button asChild className="w-full">
+                        <Link href="/dashboard/workouts">Ver Biblioteca</Link>
+                    </Button>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="w-full">
+                             <PlusCircle className="mr-2 h-4 w-4" />
+                            Criar Treino
+                        </Button>
+                    </DialogTrigger>
+                </div>
+                <DialogContent className="sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Criar Novo Treino</DialogTitle>
+                        <DialogDescription>
+                            Preencha os detalhes para criar uma nova rotina de treino.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <WorkoutForm onFinished={() => setIsDialogOpen(false)} />
+                </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </div>
