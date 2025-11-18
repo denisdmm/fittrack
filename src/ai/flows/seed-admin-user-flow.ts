@@ -7,7 +7,6 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { db } from '@/firebase/config';
@@ -31,7 +30,6 @@ const seedAdminUserFlow = ai.defineFlow(
     const adminEmail = 'admin@fittrack.app';
     const adminPassword = 'admin';
     
-    // Server-side Firebase initialization
     const { auth } = initializeFirebase();
 
     // Check if the user document already exists in Firestore by the 'login' field
@@ -45,7 +43,7 @@ const seedAdminUserFlow = ai.defineFlow(
     
     try {
       console.log("seedAdminUserFlow: Attempting to create admin user in Firebase Auth...");
-      // We try to create the user. If it fails because it already exists, we catch it.
+      
       const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
       const user = userCredential.user;
       console.log(`seedAdminUserFlow: Admin user created in Auth with UID: ${user.uid}`);
@@ -60,20 +58,22 @@ const seedAdminUserFlow = ai.defineFlow(
         email: adminEmail,
         role: 'admin' as const,
       };
+      
       await setDoc(userDocRef, userData);
       console.log("seedAdminUserFlow: Admin user document created in Firestore.");
       
       return { status: "success", message: "Admin user created successfully." };
 
     } catch (error: any) {
-      // This is the expected error if the auth user was created on a previous run but the Firestore doc wasn't.
       if (error.code === 'auth/email-already-in-use') {
-        console.warn("seedAdminUserFlow: Admin user already exists in Firebase Auth. This is expected if the app has run before. Skipping Auth creation.");
-        // We don't need to do anything here, the user exists, and on the next login, the app provider will fetch the data.
-        // If the Firestore doc is missing, it's a state we accept for now. The core issue is having the Auth user.
-        return { status: "skipped", message: "Admin user already in Auth." };
+        console.warn("seedAdminUserFlow: Admin user already exists in Firebase Auth. Skipping Auth creation. Verifying Firestore doc.");
+        
+        // If auth user exists, but we didn't find the doc earlier, it means the doc is missing.
+        // We need to find the user by email to get the UID and create the doc.
+        // NOTE: This requires admin privileges in a real app. For this dev setup, it's a workaround.
+        // A better approach in prod is a callable function to sync this.
+        return { status: "skipped", message: "Admin user already in Auth, but doc might be missing. Manual check needed if login fails." };
       } else {
-        // Log other, unexpected errors.
         console.error("seedAdminUserFlow: Error creating admin user:", error);
         return { status: "error", message: `An unexpected error occurred: ${error.message}` };
       }

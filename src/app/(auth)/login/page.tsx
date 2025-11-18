@@ -60,10 +60,8 @@ export default function LoginPage() {
     }
     
     try {
-      // Construct the email from the username, as suggested.
       const email = `${values.username.toLowerCase()}@fittrack.app`;
       
-      // Use the constructed email and password to sign in
       await signInWithEmailAndPassword(auth, email, values.password);
 
       toast({
