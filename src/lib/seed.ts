@@ -1,13 +1,13 @@
 
 'use server';
 
-import { collection, writeBatch, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, query, where } from 'firebase/firestore';
 import { exercises, workouts, progressRecords } from '@/lib/data';
 import { db } from '@/firebase/config';
-import { placeholderImages } from './placeholder-images';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
+import { setDoc } from 'firebase/firestore';
 
 
 // Helper to get a random subset of items
@@ -34,14 +34,7 @@ async function createAdminUser() {
     const adminPassword = 'admin';
     const adminUsername = 'admin';
 
-    // Check if user document already exists in Firestore
-    // This is a simplified check. A more robust solution might query by email or username.
-    // For this seed script, we'll assume if any user exists, the admin might too.
-    // A better approach is to have a dedicated admin user creation flow or check.
-    // For demo purposes, we will try to create it and catch the error if it exists.
-    
     try {
-        // First check if a user with this username exists in Firestore
         const userQuerySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", adminUsername)));
         if (!userQuerySnapshot.empty) {
             console.log("Admin user document already exists in Firestore. Skipping creation.");
@@ -53,7 +46,6 @@ async function createAdminUser() {
         const user = userCredential.user;
         console.log(`Admin user created in Auth with UID: ${user.uid}`);
 
-        // Now create the Firestore document
         const userDocRef = doc(db, 'users', user.uid);
         const userData = {
             id: user.uid,
@@ -79,13 +71,11 @@ async function createAdminUser() {
 export async function seedDatabase() {
     console.log("Starting to seed database...");
 
-    // Create admin user first
     await createAdminUser();
 
     const exercisesCollection = collection(db, 'exercises');
     const workoutsCollection = collection(db, 'workout_routines_public');
     
-    // Check if collections are empty before seeding
     const exercisesSnapshot = await getDocs(exercisesCollection);
     const workoutsSnapshot = await getDocs(workoutsCollection);
     
@@ -96,7 +86,6 @@ export async function seedDatabase() {
     
     const batch = writeBatch(db);
 
-    // 1. Seed Exercises
     const exerciseDocs: any[] = [];
     exercises.forEach((exerciseData) => {
         const exerciseRef = doc(exercisesCollection);
@@ -105,11 +94,9 @@ export async function seedDatabase() {
     });
     console.log(`${exerciseDocs.length} exercises prepared for batch.`);
 
-    // 2. Seed Workouts
     workouts.forEach((workoutData) => {
         const workoutRef = doc(workoutsCollection);
 
-        // Assign some exercises to each workout
         let associatedExercises: any[] = [];
         if (workoutData.type === 'Força') {
             associatedExercises = getRandomSubarray(exerciseDocs.filter(e => e.type === 'Força'), 4);
@@ -125,7 +112,7 @@ export async function seedDatabase() {
 
         const newWorkout = {
             ...workoutData,
-            exerciseIds: associatedExercises.map(e => ({...e})), // Storing a copy of exercise data
+            exerciseIds: associatedExercises.map(e => ({...e})),
         };
         batch.set(workoutRef, newWorkout);
     });
@@ -166,7 +153,6 @@ export async function seedUserSpecificData(userId: string) {
 
     progressRecords.forEach((record) => {
         const logRef = doc(progressCollection);
-        // Find a related workout to link
         const relatedWorkout = publicWorkouts.find(w => w.name === record.workoutName);
 
         batch.set(logRef, {

@@ -18,7 +18,7 @@ const GetUserEmailInputSchema = z.object({
 export type GetUserEmailInput = z.infer<typeof GetUserEmailInputSchema>;
 
 const GetUserEmailOutputSchema = z.object({
-  email: z.string().nullable().describe('The email associated with the username, or null if not found.'),
+  email: z.string().email().nullable().describe('The email associated with the username, or null if not found.'),
 });
 export type GetUserEmailOutput = z.infer<typeof GetUserEmailOutputSchema>;
 
@@ -46,7 +46,7 @@ const getUserEmailFlow = ai.defineFlow(
       const userData = querySnapshot.docs[0].data();
       const email = userData.email;
 
-      if (!email) {
+      if (!email || typeof email !== 'string') {
         return { email: null };
       }
 
