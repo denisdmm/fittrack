@@ -1,12 +1,17 @@
+'use client';
 import { AppHeader } from '@/components/layout/app-header';
 import { AppSidebar } from '@/components/layout/app-sidebar';
+import { WorkoutLogger } from '@/components/workout-logger';
 import { SidebarProvider } from '@/components/ui/sidebar';
+import { useAppContext } from '@/context/app-provider';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { activeWorkout } = useAppContext();
+
   return (
       <SidebarProvider>
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] dark:bg-background">
@@ -18,6 +23,7 @@ export default function DashboardLayout({
             </main>
           </div>
         </div>
+        {activeWorkout && <WorkoutLogger />}
       </SidebarProvider>
   );
 }

@@ -13,12 +13,15 @@ import { doc } from 'firebase/firestore';
 import type { Workout, Exercise } from '@/lib/types';
 import { useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAppContext } from '@/context/app-provider';
 
 export default function WorkoutDetailPage({ params }: { params: { id: string } }) {
   const firestore = useFirestore();
+  const { setActiveWorkout } = useAppContext();
   
   const workoutDocRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    // This could be a user's custom workout or a public one. For now, just public.
     return doc(firestore, 'workout_routines_public', params.id);
   }, [firestore, params.id]);
 
@@ -129,7 +132,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
               <p className="text-muted-foreground mb-4">
                 Inicie uma sessão de treino para registrar seu progresso.
               </p>
-              <Button size="lg" className="w-full">
+              <Button size="lg" className="w-full" onClick={() => setActiveWorkout(workout)}>
                 <PlayCircle className="mr-2 h-5 w-5" />
                 Iniciar Treino
               </Button>

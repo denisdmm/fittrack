@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useMemo, ReactNode, useEffe
 import { doc } from 'firebase/firestore';
 import type { User as AuthUser } from 'firebase/auth';
 import { useUser as useAuthUser, useFirestore, useDoc } from '@/firebase';
-import type { User } from '@/lib/types';
+import type { User, Workout } from '@/lib/types';
 import { seedDatabase, seedUserSpecificData } from '@/lib/seed';
 import { seedAdminUser } from '@/ai/flows/seed-admin-user-flow';
 
@@ -15,6 +15,8 @@ type AppContextType = {
   user: User | null;
   authUser: AuthUser | null;
   isUserLoading: boolean;
+  activeWorkout: Workout | null;
+  setActiveWorkout: (workout: Workout | null) => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -31,6 +33,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { data: firestoreUser, isLoading: isFirestoreUserLoading } = useDoc<User>(userDocRef);
 
   const [role, setRole] = useState<Role>('user');
+  const [activeWorkout, setActiveWorkout] = useState<Workout | null>(null);
 
   // Seed database effect
   useEffect(() => {
@@ -71,7 +74,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     user: firestoreUser,
     authUser,
     isUserLoading,
-  }), [role, firestoreUser, authUser, isUserLoading]);
+    activeWorkout,
+    setActiveWorkout,
+  }), [role, firestoreUser, authUser, isUserLoading, activeWorkout]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

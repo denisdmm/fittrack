@@ -4,9 +4,9 @@ export type User = {
   lastName: string;
   login: string;
   role: 'user' | 'admin';
-  groupId?: string; 
-  email?: string;
+  groupId?: string;
   instagramUrl?: string;
+  email?: string;
 };
 
 export type Exercise = {
@@ -31,10 +31,17 @@ export type Workout = {
 };
 
 export type ProgressRecord = {
+  id?: string;
   date: string;
   workoutName: string;
   duration: number; // in minutes
   volume: number; // total weight lifted
   userId: string;
   workoutRoutineId: string;
+  loggedSets?: Record<string, LoggedSet[]>;
+};
+
+export type LoggedSet = {
+  reps: number;
+  weight: number;
 };
