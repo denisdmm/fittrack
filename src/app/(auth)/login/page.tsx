@@ -76,7 +76,7 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error("Login failed:", error);
       let description = "Ocorreu um erro durante o login.";
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-email') {
         description = "Credenciais inválidas. Verifique seu usuário e senha.";
       }
       toast({
@@ -138,9 +138,6 @@ export default function LoginPage() {
                 </FormItem>
               )}
             />
-             <div className="text-xs text-muted-foreground">
-                Para demonstração: use <span className="font-bold">admin</span> e senha <span className="font-bold">admin</span> para o acesso de administrador.
-            </div>
             <Button type="submit" className="w-full">
               Login
             </Button>
