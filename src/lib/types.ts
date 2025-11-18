@@ -5,6 +5,7 @@ export type User = {
   email: string;
   login: string;
   role: 'user' | 'admin';
+  groupId?: string; // Tornando groupId opcional
 };
 
 export type Exercise = {
