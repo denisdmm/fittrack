@@ -10,7 +10,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
-import { initializeApp, getApps, getApp, deleteApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
@@ -31,6 +31,10 @@ const seedAdminUserFlow = ai.defineFlow(
     const adminEmail = 'admin@fittrack.app';
     const adminPassword = 'admin';
     
+    // Initialize a dedicated auth instance for this server-side operation
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
     // Check if the user document already exists in Firestore by the 'login' field
     const userQuery = query(collection(db, "users"), where("login", "==", adminLogin));
     const userQuerySnapshot = await getDocs(userQuery);
@@ -39,22 +43,10 @@ const seedAdminUserFlow = ai.defineFlow(
       console.log("seedAdminUserFlow: Admin user document already exists in Firestore. Skipping creation.");
       return { status: "skipped", message: "Admin user already exists." };
     }
-
-    // Use a temporary, secondary Firebase app instance for this admin operation
-    // This avoids conflicts with the client-side Firebase instance.
-    const adminAppName = 'seedAdminApp';
-    let adminApp;
-    try {
-      adminApp = getApp(adminAppName);
-    } catch (e) {
-      adminApp = initializeApp(firebaseConfig, adminAppName);
-    }
-    
-    const adminAuth = getAuth(adminApp);
     
     try {
       console.log("seedAdminUserFlow: Attempting to create admin user in Firebase Auth...");
-      const userCredential = await createUserWithEmailAndPassword(adminAuth, adminEmail, adminPassword);
+      const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
       const user = userCredential.user;
       console.log(`seedAdminUserFlow: Admin user created in Auth with UID: ${user.uid}`);
 
@@ -83,13 +75,6 @@ const seedAdminUserFlow = ai.defineFlow(
         console.error("seedAdminUserFlow: Error creating admin user:", error);
         return { status: "error", message: error.message };
       }
-    } finally {
-        // Clean up the temporary app instance
-        try {
-            await deleteApp(adminApp);
-        } catch (e) {
-            console.error("Failed to delete temporary admin app", e);
-        }
     }
   }
 );

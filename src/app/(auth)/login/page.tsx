@@ -61,16 +61,21 @@ export default function LoginPage() {
     }
     
     try {
-      // 1. Securely find user's email via Genkit flow
-      const result = await getUserEmail({ username: values.username });
-      
-      const email = result.email;
+      let email;
+      // Special case for demo admin user to make login more robust
+      if (values.username === 'admin') {
+        email = 'admin@fittrack.app';
+      } else {
+        // For all other users, securely find their email via Genkit flow
+        const result = await getUserEmail({ username: values.username });
+        email = result.email;
+      }
 
       if (!email) {
         throw new Error("Usuário não encontrado ou e-mail inválido.");
       }
       
-      // 2. Use email and password to sign in
+      // Use email and password to sign in
       await signInWithEmailAndPassword(auth, email, values.password);
 
       toast({

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Eye, EyeOff } from 'lucide-react';
 
 
@@ -81,7 +81,7 @@ export default function SignupPage() {
     
     // We'll construct an email from the username to use with Firebase Auth
     // This is a common pattern when you want username-based login.
-    const email = `${formattedValues.login}@fittrack.app`;
+    const email = `${formattedValues.login.toLowerCase()}@fittrack.app`;
 
     try {
       // 1. Create user in Firebase Auth
@@ -99,8 +99,8 @@ export default function SignupPage() {
         role: 'user' as const, // Default role
       };
       
-      // Use non-blocking write
-      setDocumentNonBlocking(userDocRef, userData, { merge: false });
+      // Use blocking write here to ensure user doc is created before navigating
+      await setDoc(userDocRef, userData);
 
       toast({
         title: "Conta criada com sucesso!",
@@ -114,6 +114,8 @@ export default function SignupPage() {
       let description = "Ocorreu um erro ao criar sua conta.";
       if (error.code === 'auth/email-already-in-use') {
         description = "Este nome de usuário já está em uso. Tente outro.";
+      } else if (error.code === 'auth/weak-password') {
+        description = "A senha é muito fraca. Tente uma com pelo menos 6 caracteres.";
       }
       toast({
         variant: "destructive",
