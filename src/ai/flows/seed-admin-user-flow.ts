@@ -59,13 +59,14 @@ const seedAdminUserFlow = ai.defineFlow(
       console.log(`seedAdminUserFlow: Admin user created in Auth with UID: ${user.uid}`);
 
       const userDocRef = doc(db, 'users', user.uid);
-      // Correctly use 'login' field
+      // Correctly use 'login' field and add missing 'groupId'
       const userData = {
         id: user.uid,
         firstName: 'Admin',
         lastName: 'User',
         login: adminLogin,
         email: adminEmail,
+        groupId: 'admin_group', // Added missing required field
         role: 'admin' as const,
       };
       await setDoc(userDocRef, userData);
