@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from 'react';
 import { doc, setDoc } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { db } from '@/firebase/config';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,7 +30,6 @@ interface UserFormProps {
 
 export function UserForm({ user, onFinished }: UserFormProps) {
     const { toast } = useToast();
-    const firestore = useFirestore();
     const [showPassword, setShowPassword] = useState(false);
 
     const formSchema = z.object({
@@ -70,7 +69,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     try {
         if (user) {
             // Update user
-            const userRef = doc(firestore, "users", user.id);
+            const userRef = doc(db, "users", user.id);
             await setDoc(userRef, { 
                 firstName: formattedValues.firstName,
                 lastName: formattedValues.lastName,

@@ -2,10 +2,9 @@ export type User = {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
   login: string;
   role: 'user' | 'admin';
-  groupId?: string; // Tornando groupId opcional
+  groupId?: string; 
 };
 
 export type Exercise = {

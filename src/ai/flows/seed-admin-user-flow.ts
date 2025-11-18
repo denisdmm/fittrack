@@ -69,7 +69,6 @@ const seedAdminUserFlow = ai.defineFlow(
         firstName: 'Admin',
         lastName: 'User',
         login: adminLogin,
-        email: adminEmail, // Ensure email is saved
         role: 'admin' as const,
       };
       

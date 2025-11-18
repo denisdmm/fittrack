@@ -93,7 +93,6 @@ export default function SignupPage() {
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
         login: formattedValues.login,
-        email: email, 
         role: 'user' as const,
       };
       
