@@ -61,15 +61,9 @@ export default function LoginPage() {
     }
     
     try {
-      let email;
-      // Special case for demo admin user to make login more robust
-      if (values.username === 'admin') {
-        email = 'admin@fittrack.app';
-      } else {
-        // For all other users, securely find their email via Genkit flow
-        const result = await getUserEmail({ username: values.username });
-        email = result.email;
-      }
+      // Use the Genkit flow to securely find the user's email
+      const result = await getUserEmail({ username: values.username });
+      const email = result.email;
 
       if (!email) {
         throw new Error("Usuário não encontrado ou e-mail inválido.");
@@ -90,7 +84,9 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Falha no Login",
-        description: error.message.includes('auth/invalid-credential') ? "Credenciais inválidas." : "Usuário ou senha inválidos.",
+        description: error.message.includes('auth/invalid-credential') 
+          ? "Credenciais inválidas. Verifique seu usuário e senha." 
+          : "Ocorreu um erro durante o login.",
       });
     }
   }

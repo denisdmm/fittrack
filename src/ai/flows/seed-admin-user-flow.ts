@@ -9,10 +9,9 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { collection, query, where, getDocs, setDoc, doc } from 'firebase/firestore';
-import { db } from '@/firebase/config';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { firebaseConfig } from '@/firebase/config';
+import { firebaseConfig, db } from '@/firebase/config';
 
 // No input or output schema needed for this operation, as it's a one-off task.
 export async function seedAdminUser(): Promise<{ status: string; message: string }> {

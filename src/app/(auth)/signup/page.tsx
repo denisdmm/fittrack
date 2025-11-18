@@ -36,7 +36,7 @@ const formSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
   lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
   login: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
-  password: z.string().min(1, { message: "A senha é obrigatória." }),
+  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
 })
 
 
