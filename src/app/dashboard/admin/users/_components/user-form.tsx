@@ -30,9 +30,8 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     const formSchema = z.object({
         firstName: z.string().min(1, { message: "O nome é obrigatório." }),
         lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
-        email: z.string().email({ message: "Por favor, insira um email válido." }),
         username: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
-        password: user ? z.string().optional() : z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
+        password: user ? z.string().optional() : z.string().min(1, { message: "A senha é obrigatória." }),
         role: z.enum(['user', 'admin']),
       });
       
@@ -42,16 +41,18 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      email: user?.email || "",
       username: user?.username || "",
       password: "",
       role: user?.role || "user",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  const capitalize = (s: string) => {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
 
+  function onSubmit(values: z.infer<typeof formSchema>) {
     const formattedValues = {
         ...values,
         firstName: capitalize(values.firstName),
@@ -76,7 +77,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
               <FormItem>
                 <FormLabel>Nome</FormLabel>
                 <FormControl>
-                  <Input placeholder="João" {...field} />
+                  <Input placeholder="João" {...field} onChange={e => field.onChange(capitalize(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -89,26 +90,13 @@ export function UserForm({ user, onFinished }: UserFormProps) {
               <FormItem>
                 <FormLabel>Sobrenome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Silva" {...field} />
+                  <Input placeholder="Silva" {...field} onChange={e => field.onChange(capitalize(e.target.value))} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
-        <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                    <Input type="email" placeholder="seu@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-        />
         <FormField
             control={form.control}
             name="username"
@@ -129,7 +117,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 <FormItem>
                 <FormLabel>Senha</FormLabel>
                 <FormControl>
-                    <Input type="password" placeholder={user ? "Deixe em branco para não alterar" : "Mínimo 8 caracteres"}/>
+                    <Input type="password" placeholder={user ? "Deixe em branco para não alterar" : "Senha"}/>
                 </FormControl>
                 {user && <FormDescription className="text-xs">Deixe em branco para não alterar a senha.</FormDescription>}
                 <FormMessage />

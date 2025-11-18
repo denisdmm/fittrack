@@ -31,7 +31,7 @@ const formSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
   lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
   username: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
-  password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
+  password: z.string().min(1, { message: "A senha é obrigatória." }),
 })
 
 
@@ -49,10 +49,13 @@ export default function SignupPage() {
       password: "",
     },
   })
+
+  const capitalize = (s: string) => {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
  
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-
     const formattedValues = {
       ...values,
       firstName: capitalize(values.firstName),
@@ -91,7 +94,7 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <Input placeholder="João" {...field} />
+                        <Input placeholder="João" {...field} onChange={e => field.onChange(capitalize(e.target.value))}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -104,7 +107,7 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Sobrenome</FormLabel>
                       <FormControl>
-                        <Input placeholder="Silva" {...field} />
+                        <Input placeholder="Silva" {...field} onChange={e => field.onChange(capitalize(e.target.value))}/>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -131,7 +134,7 @@ export default function SignupPage() {
                     <FormItem>
                       <FormLabel>Senha</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="Mínimo 8 caracteres" {...field} />
+                        <Input type="password" placeholder="Sua senha" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

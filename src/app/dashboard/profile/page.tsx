@@ -30,12 +30,11 @@ import { Separator } from "@/components/ui/separator";
 const profileFormSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
   lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
-  email: z.string().email({ message: "Por favor, insira um email válido." }),
 });
 
 const passwordFormSchema = z.object({
     currentPassword: z.string().min(1, { message: "A senha atual é obrigatória." }),
-    newPassword: z.string().min(8, { message: "A nova senha deve ter pelo menos 8 caracteres." }),
+    newPassword: z.string().min(1, { message: "A nova senha é obrigatória." }),
 });
 
 export default function ProfilePage() {
@@ -47,7 +46,6 @@ export default function ProfilePage() {
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      email: user?.email || "",
     },
   });
 
@@ -59,10 +57,13 @@ export default function ProfilePage() {
     },
   });
 
+  const capitalize = (s: string) => {
+    if (!s) return "";
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  }
+
 
   function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-
     const formattedValues = {
         ...values,
         firstName: capitalize(values.firstName),
@@ -117,7 +118,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Nome</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} onChange={e => field.onChange(capitalize(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -130,26 +131,13 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Sobrenome</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} onChange={e => field.onChange(capitalize(e.target.value))} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              <FormField
-                control={profileForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <Button type="submit">Salvar Alterações</Button>
             </form>
           </Form>
