@@ -4,7 +4,7 @@
 import { collection, writeBatch, getDocs, doc, query, where, setDoc } from 'firebase/firestore';
 import { exercises, workouts, progressRecords } from '@/lib/data';
 import { db } from '@/firebase/config';
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
@@ -15,62 +15,8 @@ const getRandomSubarray = <T>(arr: T[], size: number): T[] => {
   return shuffled.slice(0, size);
 };
 
-// A separate, temporary Firebase App instance for admin actions during seed.
-const getSeedAdminApp = () => {
-    const apps = getApps();
-    const adminApp = apps.find(app => app.name === 'seedAdmin');
-    if (adminApp) {
-      return adminApp;
-    }
-    return initializeApp(firebaseConfig, 'seedAdmin');
-};
-
-async function createAdminUser() {
-    console.log("Checking for admin user...");
-    const adminApp = getSeedAdminApp();
-    const auth = getAuth(adminApp);
-    const adminEmail = 'admin@fittrack.app';
-    const adminPassword = 'admin';
-    const adminUsername = 'admin';
-
-    try {
-        const userQuerySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", adminUsername)));
-        if (!userQuerySnapshot.empty) {
-            console.log("Admin user document already exists in Firestore. Skipping creation.");
-            return;
-        }
-
-        console.log("Attempting to create admin user in Firebase Auth...");
-        const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
-        const user = userCredential.user;
-        console.log(`Admin user created in Auth with UID: ${user.uid}`);
-
-        const userDocRef = doc(db, 'users', user.uid);
-        const userData = {
-            id: user.uid,
-            firstName: 'Admin',
-            lastName: 'User',
-            username: adminUsername,
-            email: adminEmail,
-            role: 'admin' as const,
-        };
-        await setDoc(userDocRef, userData);
-        console.log("Admin user document created in Firestore.");
-
-    } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            console.log("Admin user already exists in Firebase Auth. Skipping creation.");
-        } else {
-            console.error("Error creating admin user:", error);
-        }
-    }
-}
-
-
 export async function seedDatabase() {
-    console.log("Starting to seed database...");
-
-    await createAdminUser();
+    console.log("Starting to seed database with public data...");
 
     const exercisesCollection = collection(db, 'exercises');
     const workoutsCollection = collection(db, 'workout_routines_public');
@@ -122,10 +68,10 @@ export async function seedDatabase() {
 
     try {
         await batch.commit();
-        console.log("Batch committed successfully. Database seeded.");
+        console.log("Batch committed successfully. Public database data seeded.");
         return { success: true, message: "Database seeded successfully!" };
     } catch (error) {
-        console.error("Error seeding database: ", error);
+        console.error("Error seeding public database data: ", error);
         return { success: false, message: `Error seeding database: ${error}` };
     }
 }

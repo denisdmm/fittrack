@@ -5,6 +5,7 @@ import type { User as AuthUser } from 'firebase/auth';
 import { useUser as useAuthUser, useFirestore, useDoc } from '@/firebase';
 import type { User } from '@/lib/types';
 import { seedDatabase, seedUserSpecificData } from '@/lib/seed';
+import { seedAdminUser } from '@/ai/flows/seed-admin-user-flow';
 
 export type Role = 'user' | 'admin';
 
@@ -34,7 +35,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Seed database effect
   useEffect(() => {
     async function runSeed() {
-        console.log("Checking if database needs to be seeded...");
+        console.log("Checking if admin user needs to be seeded...");
+        await seedAdminUser(); // Use the server-side flow for admin
+        console.log("Checking if database needs to be seeded with public data...");
         await seedDatabase();
     }
     runSeed();
