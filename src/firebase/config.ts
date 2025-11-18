@@ -10,5 +10,8 @@ export const firebaseConfig = {
   "messagingSenderId": "1061617650558"
 };
 
+// Initialize Firebase
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+
+// Initialize Cloud Firestore and get a reference to the service
 export const db = getFirestore(app);

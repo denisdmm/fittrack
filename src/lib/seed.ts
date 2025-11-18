@@ -1,13 +1,12 @@
 
 'use server';
 
-import { collection, writeBatch, getDocs, doc, query, where } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, query, where, setDoc } from 'firebase/firestore';
 import { exercises, workouts, progressRecords } from '@/lib/data';
 import { db } from '@/firebase/config';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
-import { setDoc } from 'firebase/firestore';
 
 
 // Helper to get a random subset of items
@@ -79,6 +78,7 @@ export async function seedDatabase() {
     const exercisesSnapshot = await getDocs(exercisesCollection);
     const workoutsSnapshot = await getDocs(workoutsCollection);
     
+    // Check if both are empty. We only seed if the database is fresh.
     if (!exercisesSnapshot.empty && !workoutsSnapshot.empty) {
         console.log("Database already seeded with workouts/exercises. Skipping.");
         return { success: true, message: "Database already seeded." };
@@ -90,6 +90,7 @@ export async function seedDatabase() {
     exercises.forEach((exerciseData) => {
         const exerciseRef = doc(exercisesCollection);
         batch.set(exerciseRef, exerciseData);
+        // Important: we need the ID for the next step, so we create a representation of the doc here.
         exerciseDocs.push({ id: exerciseRef.id, ...exerciseData });
     });
     console.log(`${exerciseDocs.length} exercises prepared for batch.`);
@@ -112,6 +113,7 @@ export async function seedDatabase() {
 
         const newWorkout = {
             ...workoutData,
+            // We embed the full exercise object, not just the ID.
             exerciseIds: associatedExercises.map(e => ({...e})),
         };
         batch.set(workoutRef, newWorkout);
@@ -153,12 +155,13 @@ export async function seedUserSpecificData(userId: string) {
 
     progressRecords.forEach((record) => {
         const logRef = doc(progressCollection);
+        // Find the corresponding public workout to link it
         const relatedWorkout = publicWorkouts.find(w => w.name === record.workoutName);
 
         batch.set(logRef, {
             ...record,
             userId: userId,
-            workoutRoutineId: relatedWorkout?.id || '',
+            workoutRoutineId: relatedWorkout?.id || '', // Link to the public workout
         });
     });
     console.log(`${progressRecords.length} progress records prepared for batch for user ${userId}.`);
