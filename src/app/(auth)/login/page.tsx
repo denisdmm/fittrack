@@ -28,7 +28,6 @@ import { Logo } from '@/components/logo';
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getUserEmail } from '@/ai/flows/get-user-email-flow';
 import { Eye, EyeOff } from 'lucide-react';
 
 const formSchema = z.object({
@@ -61,15 +60,10 @@ export default function LoginPage() {
     }
     
     try {
-      // Use the Genkit flow to securely find the user's email
-      const result = await getUserEmail({ username: values.username });
-      const email = result.email;
-
-      if (!email) {
-        throw new Error("Usuário não encontrado ou e-mail inválido.");
-      }
+      // Construct the email from the username, as suggested.
+      const email = `${values.username.toLowerCase()}@fittrack.app`;
       
-      // Use email and password to sign in
+      // Use the constructed email and password to sign in
       await signInWithEmailAndPassword(auth, email, values.password);
 
       toast({
@@ -81,12 +75,14 @@ export default function LoginPage() {
 
     } catch (error: any) {
       console.error("Login failed:", error);
+      let description = "Ocorreu um erro durante o login.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+        description = "Credenciais inválidas. Verifique seu usuário e senha.";
+      }
       toast({
         variant: "destructive",
         title: "Falha no Login",
-        description: error.message.includes('auth/invalid-credential') 
-          ? "Credenciais inválidas. Verifique seu usuário e senha." 
-          : "Ocorreu um erro durante o login.",
+        description: description,
       });
     }
   }
