@@ -114,18 +114,6 @@ export function AppHeader() {
           <DropdownMenuItem asChild><Link href="/dashboard/profile">Perfil</Link></DropdownMenuItem>
           <DropdownMenuItem>Suporte</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuLabel>Mudar Perfil (Demo)</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={role} onValueChange={(value) => setRole(value as 'user' | 'admin')}>
-                <DropdownMenuRadioItem value="user">
-                    <UserCheck className="mr-2 h-4 w-4" />
-                    Usuário
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="admin">
-                    <UserCog className="mr-2 h-4 w-4" />
-                    Administrador
-                </DropdownMenuRadioItem>
-            </DropdownMenuRadioGroup>
-          <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
             <Link href="/">Sair</Link>
           </DropdownMenuItem>
