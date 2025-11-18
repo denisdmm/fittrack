@@ -5,6 +5,7 @@ export type User = {
   login: string;
   role: 'user' | 'admin';
   groupId?: string; 
+  email?: string;
 };
 
 export type Exercise = {
