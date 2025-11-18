@@ -1,3 +1,64 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-landing",
+      "description": "A person running on a trail during sunset, representing fitness and determination.",
+      "imageUrl": "https://images.unsplash.com/photo-1648011750657-c007f0a3a8fe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cnVubmluZyUyMHN1bnNldHxlbnwwfHx8fDE3NjM0MjYxMTl8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "running sunset"
+    },
+    {
+      "id": "workout-strength",
+      "description": "A set of dumbbells on a gym floor.",
+      "imageUrl": "https://images.unsplash.com/photo-1653773869760-5b0f846231fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxkdW1iYmVsbHMlMjBneW18ZW58MHx8fHwxNzYzNDI2MTE5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dumbbells gym"
+    },
+    {
+      "id": "workout-cardio",
+      "description": "A person running on a treadmill.",
+      "imageUrl": "https://images.unsplash.com/photo-1716367840407-f9414a84b325?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmVhZG1pbGwlMjBydW5uaW5nfGVufDB8fHx8MTc2MzQyNjExOXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "treadmill running"
+    },
+    {
+      "id": "workout-flexibility",
+      "description": "A person doing yoga in a bright room.",
+      "imageUrl": "https://images.unsplash.com/photo-1599447292325-2cffaa79bcbb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8eW9nYSUyMHN0cmV0Y2hpbmd8ZW58MHx8fHwxNzYzMzQ5NDI1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "yoga stretching"
+    },
+    {
+      "id": "workout-hiit",
+      "description": "A person performing a high-intensity jump exercise.",
+      "imageUrl": "https://images.unsplash.com/photo-1628714357044-944ea91b13fc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxqdW1waW5nJTIwZXhlcmNpc2V8ZW58MHx8fHwxNzYzNDI2MTE5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jumping exercise"
+    },
+    {
+      "id": "workout-bodyweight",
+      "description": "A person doing push-ups outdoors.",
+      "imageUrl": "https://images.unsplash.com/photo-1693930051018-0447bbce4d12?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxwdXNoLXVwcyUyMHBhcmt8ZW58MHx8fHwxNzYzNDI2MTE5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "push-ups park"
+    },
+    {
+      "id": "workout-custom",
+      "description": "A notebook and pen for planning workouts.",
+      "imageUrl": "https://images.unsplash.com/photo-1629839958207-5400ab5e1e7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxub3RlYm9vayUyMHBsYW58ZW58MHx8fHwxNzYzMzIyNDU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "notebook plan"
+    },
+    {
+      "id": "profile-avatar-1",
+      "description": "Profile picture for a user.",
+      "imageUrl": "https://images.unsplash.com/photo-1600180758890-6b94519a8ba6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjMzODMwNzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "person portrait"
+    },
+    {
+      "id": "profile-avatar-2",
+      "description": "Profile picture for another user.",
+      "imageUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3b21hbiUyMHNtaWxpbmd8ZW58MHx8fHwxNzYzMzk3NDM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "woman smiling"
+    },
+    {
+      "id": "profile-avatar-3",
+      "description": "Profile picture for another user.",
+      "imageUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NjMzNzc5Mjh8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    }
+  ]
 }
