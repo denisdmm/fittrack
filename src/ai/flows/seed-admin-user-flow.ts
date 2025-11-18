@@ -31,7 +31,7 @@ const seedAdminUserFlow = ai.defineFlow(
     const adminEmail = 'admin@fittrack.app';
     const adminPassword = 'admin';
     
-    // Use the central initializeFirebase to get a consistent auth instance
+    // Server-side Firebase initialization
     const { auth } = initializeFirebase();
 
     // Check if the user document already exists in Firestore by the 'login' field
@@ -56,7 +56,7 @@ const seedAdminUserFlow = ai.defineFlow(
         id: user.uid,
         firstName: 'Admin',
         lastName: 'User',
-        login: adminLogin, // Correctly using 'login'
+        login: adminLogin,
         email: adminEmail,
         role: 'admin' as const,
       };
