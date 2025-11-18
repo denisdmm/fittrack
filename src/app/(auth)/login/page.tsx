@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from "@/hooks/use-toast"
-import { useAppContext } from '@/context/app-provider';
+import { useAuth, useFirestore } from '@/firebase';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "O nome de usuário é obrigatório." }),
@@ -35,7 +37,8 @@ const formSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { setRole } = useAppContext();
+  const auth = useAuth();
+  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,21 +48,51 @@ export default function LoginPage() {
     },
   })
  
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // NOTE: This is a mock authentication.
-    // In a real app, you would integrate with Firebase Auth.
-    toast({
-      title: "Login bem-sucedido!",
-      description: "Redirecionando para o seu painel...",
-    })
-
-    if (values.username === 'admin' && values.password === 'admin') {
-      setRole('admin');
-    } else {
-      setRole('user');
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!firestore || !auth) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Serviços do Firebase não estão disponíveis.",
+      });
+      return;
     }
     
-    router.push('/dashboard');
+    try {
+      // 1. Find user by username to get their email
+      const usersRef = collection(firestore, "users");
+      const q = query(usersRef, where("username", "==", values.username), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error("Usuário não encontrado.");
+      }
+
+      const userData = querySnapshot.docs[0].data();
+      const email = userData.email;
+
+      if (!email) {
+        throw new Error("O usuário não possui um e-mail associado.");
+      }
+      
+      // 2. Use email and password to sign in
+      initiateEmailSignIn(auth, email, values.password);
+
+      toast({
+        title: "Login bem-sucedido!",
+        description: "Redirecionando para o seu painel...",
+      })
+      
+      router.push('/dashboard');
+
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Falha no Login",
+        description: error.message === 'Firebase: Error (auth/invalid-credential).' ? "Credenciais inválidas." : error.message,
+      });
+    }
   }
 
   return (

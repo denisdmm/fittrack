@@ -24,16 +24,22 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockUsers } from '@/lib/data';
 import { MoreHorizontal, PlusCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { UserForm } from './_components/user-form';
 import type { User } from '@/lib/types';
 import { useAppContext } from '@/context/app-provider';
 import Link from 'next/link';
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminUsersPage() {
     const { role } = useAppContext();
+    const firestore = useFirestore();
+    const usersRef = collection(firestore, 'users');
+    const { data: users, isLoading } = useCollection<User>(usersRef);
+    
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
 
@@ -96,7 +102,17 @@ export default function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockUsers.map((user) => (
+                {isLoading && (
+                  <>
+                    <TableRow>
+                      <TableCell colSpan={5}><Skeleton className="h-8" /></TableCell>
+                    </TableRow>
+                     <TableRow>
+                      <TableCell colSpan={5}><Skeleton className="h-8" /></TableCell>
+                    </TableRow>
+                  </>
+                )}
+                {users && users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
                     <TableCell>{user.username}</TableCell>

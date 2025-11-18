@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -21,11 +23,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form";
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from '@/hooks/use-toast';
-import { useAppContext } from '@/context/app-provider';
+import { useAuth, useFirestore, setDocumentNonBlocking } from '@/firebase';
+
 
 const formSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
@@ -38,7 +41,9 @@ const formSchema = z.object({
 export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { setRole } = useAppContext();
+  const auth = useAuth();
+  const firestore = useFirestore();
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,21 +60,64 @@ export default function SignupPage() {
     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
   }
  
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!auth || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Serviços do Firebase não estão disponíveis.",
+      });
+      return;
+    }
+
     const formattedValues = {
       ...values,
       firstName: capitalize(values.firstName),
       lastName: capitalize(values.lastName),
     };
-    // NOTE: This is a mock signup.
-    // In a real app, you would use Firebase Auth to create a user.
-    console.log(formattedValues);
-    toast({
-      title: "Conta criada com sucesso!",
-      description: "Bem-vindo ao FitTrack! Redirecionando...",
-    })
-    setRole('user');
-    router.push('/dashboard');
+    
+    // We'll construct an email from the username to use with Firebase Auth
+    // This is a common pattern when you want username-based login.
+    const email = `${formattedValues.username}@fittrack.app`;
+
+    try {
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, formattedValues.password);
+      const user = userCredential.user;
+
+      // 2. Create user document in Firestore
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userData = {
+        id: user.uid,
+        firstName: formattedValues.firstName,
+        lastName: formattedValues.lastName,
+        username: formattedValues.username,
+        email: email, // Store the generated email
+        role: 'user' as const, // Default role
+      };
+      
+      // Use non-blocking write
+      setDocumentNonBlocking(userDocRef, userData, { merge: false });
+
+      toast({
+        title: "Conta criada com sucesso!",
+        description: "Bem-vindo ao FitTrack! Redirecionando...",
+      });
+
+      router.push('/dashboard');
+
+    } catch (error: any) {
+      console.error("Signup failed:", error);
+      let description = "Ocorreu um erro ao criar sua conta.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "Este nome de usuário já está em uso. Tente outro.";
+      }
+      toast({
+        variant: "destructive",
+        title: "Falha no Cadastro",
+        description: description,
+      });
+    }
   }
 
   return (
