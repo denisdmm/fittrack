@@ -68,7 +68,7 @@ export function AppSidebar() {
         </div>
         <div className="mt-auto p-4">
             <div className="text-center text-xs text-muted-foreground">
-                <p>&copy; 2024 FitTrack Firestore</p>
+                <p>&copy; 2024 FitTrack</p>
             </div>
         </div>
       </div>

@@ -32,7 +32,7 @@ export default function LandingPage() {
       <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm fixed top-0 left-0 right-0 z-20">
         <Link href="#" className="flex items-center justify-center" prefetch={false}>
           <Logo />
-          <span className="sr-only">FitTrack Firestore</span>
+          <span className="sr-only">FitTrack</span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" asChild>
@@ -63,7 +63,7 @@ export default function LandingPage() {
             <div className="container px-4 md:px-6 text-center relative z-10">
               <div className="max-w-3xl mx-auto">
                 <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl text-foreground font-headline">
-                  Construa seu Melhor Eu com FitTrack Firestore
+                  Construa seu Melhor Eu com FitTrack
                 </h1>
                 <p className="mt-4 text-muted-foreground md:text-xl">
                   Sua jornada de fitness pessoal, simplificada. Acompanhe treinos, visualize o progresso e atinja seus objetivos.
@@ -89,7 +89,7 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">Recursos Principais</div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Mais Rápido, Melhor, Mais Forte</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  O FitTrack Firestore fornece as ferramentas que você precisa para ter sucesso em sua jornada de fitness.
+                  O FitTrack fornece as ferramentas que você precisa para ter sucesso em sua jornada de fitness.
                 </p>
               </div>
             </div>
@@ -110,7 +110,7 @@ export default function LandingPage() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; 2024 FitTrack Firestore. Todos os direitos reservados.</p>
+        <p className="text-xs text-muted-foreground">&copy; 2024 FitTrack. Todos os direitos reservados.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
             Termos de Serviço

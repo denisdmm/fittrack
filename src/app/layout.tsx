@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AppProvider } from '@/context/app-provider';
 
 export const metadata: Metadata = {
-  title: 'FitTrack Firestore',
+  title: 'FitTrack',
   description: 'Sua jornada de fitness pessoal, com tecnologia Firestore.',
 };
 
