@@ -10,20 +10,22 @@ export type User = {
 export type Exercise = {
   id: string;
   name: string;
+  description: string;
+  type: string;
   sets: number;
-  reps: string;
-  rest: string;
+  reps: number;
 };
 
 export type Workout = {
   id: string;
   name: string;
   description: string;
-  difficulty: 'Iniciante' | 'Intermediário' | 'Avançado';
+  difficultyLevel: 'Iniciante' | 'Intermediário' | 'Avançado';
   type: 'Força' | 'Cardio' | 'Flexibilidade' | 'HIIT' | 'Calistenia';
-  exercises: Exercise[];
-  image: string;
-  imageHint: string;
+  exerciseIds: string[] | any[]; // Can be array of strings or array of Exercise objects
+  userId?: string;
+  image?: string;
+  imageHint?: string;
 };
 
 export type ProgressRecord = {
@@ -31,4 +33,6 @@ export type ProgressRecord = {
   workoutName: string;
   duration: number; // in minutes
   volume: number; // total weight lifted
+  userId: string;
+  workoutRoutineId: string;
 };

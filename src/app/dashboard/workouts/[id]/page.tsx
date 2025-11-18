@@ -1,19 +1,64 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronLeft, PlayCircle, Repeat, Dumbbell, Timer } from 'lucide-react';
-import { mockWorkouts } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useDoc, useFirestore } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Workout, Exercise } from '@/lib/types';
+import { useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function WorkoutDetailPage({ params }: { params: { id: string } }) {
-  const workout = mockWorkouts.find((w) => w.id === params.id);
+  const firestore = useFirestore();
+  
+  const workoutDocRef = useMemo(() => {
+    if (!firestore) return null;
+    return doc(firestore, 'workout_routines_public', params.id);
+  }, [firestore, params.id]);
+
+  const { data: workout, isLoading } = useDoc<Workout>(workoutDocRef);
+
+  // We can't use notFound() directly with hooks, so we handle loading and empty states
+  if (isLoading) {
+    return (
+        <div className="container mx-auto max-w-4xl py-8 space-y-8">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <div className="flex flex-col md:flex-row gap-8">
+                <div className="w-full md:w-2/3 space-y-4">
+                  <Skeleton className="h-48 w-full" />
+                </div>
+                <div className="w-full md:w-1/3">
+                  <Skeleton className="h-40 w-full" />
+                </div>
+            </div>
+        </div>
+    )
+  }
 
   if (!workout) {
-    notFound();
+    // This will be rendered on the client if the doc doesn't exist
+    return (
+      <div className="container mx-auto max-w-4xl py-8 text-center">
+        <h1 className="text-2xl font-bold">Treino não encontrado</h1>
+        <p className="text-muted-foreground">O treino que você está procurando não existe.</p>
+        <Button asChild className="mt-4">
+          <Link href="/dashboard/workouts">
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Voltar para a Biblioteca
+          </Link>
+        </Button>
+      </div>
+    );
   }
+  
+  const exercises = workout.exerciseIds as unknown as Exercise[];
 
   return (
     <div className="container mx-auto max-w-4xl py-8">
@@ -28,7 +73,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
 
       <div className="relative h-64 w-full rounded-lg overflow-hidden mb-8">
         <Image
-          src={workout.image}
+          src={workout.image || "https://picsum.photos/seed/1/1200/400"}
           alt={workout.name}
           fill
           className="object-cover"
@@ -37,7 +82,7 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute bottom-0 left-0 p-6">
           <Badge variant="secondary" className="mb-2 bg-primary/80 backdrop-blur-sm text-primary-foreground border-none">
-            {workout.difficulty}
+            {workout.difficultyLevel}
           </Badge>
           <h1 className="text-4xl font-bold text-white font-headline">{workout.name}</h1>
           <p className="text-lg text-white/90 mt-1">{workout.description}</p>
@@ -52,8 +97,8 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
             </CardHeader>
             <CardContent>
               <ul className="space-y-4">
-                {workout.exercises.map((exercise, index) => (
-                  <li key={exercise.id}>
+                {exercises && exercises.map((exercise: any, index: number) => (
+                  <li key={index}>
                     <div className="flex items-center justify-between">
                       <p className="font-semibold">{exercise.name}</p>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -64,11 +109,11 @@ export default function WorkoutDetailPage({ params }: { params: { id: string } }
                           <Dumbbell className="h-4 w-4" /> {exercise.reps} reps
                         </span>
                          <span className="flex items-center gap-1">
-                          <Timer className="h-4 w-4" /> {exercise.rest} rest
+                          <Timer className="h-4 w-4" /> {exercise.rest || '60s'} rest
                         </span>
                       </div>
                     </div>
-                    {index < workout.exercises.length - 1 && <Separator className="mt-4" />}
+                    {index < exercises.length - 1 && <Separator className="mt-4" />}
                   </li>
                 ))}
               </ul>

@@ -21,17 +21,12 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { mockProgress } from '@/lib/data';
-
-const volumeData = mockProgress.map(p => ({
-  date: new Date(p.date).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }),
-  Volume: p.volume
-}));
-
-const durationData = mockProgress.map(p => ({
-  date: new Date(p.date).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }),
-  Duração: p.duration
-}));
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { ProgressRecord } from '@/lib/types';
+import { useAppContext } from '@/context/app-provider';
+import { useMemo } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const chartConfig = {
   Volume: {
@@ -45,6 +40,33 @@ const chartConfig = {
 };
 
 export default function ProgressPage() {
+  const { user } = useAppContext();
+  const firestore = useFirestore();
+
+  const progressCollectionRef = useMemo(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, `users/${user.id}/workout_logs`);
+  }, [firestore, user]);
+  
+  const { data: progress, isLoading } = useCollection<ProgressRecord>(progressCollectionRef);
+
+  const volumeData = useMemo(() => {
+    if (!progress) return [];
+    return progress.map(p => ({
+      date: new Date(p.date).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }),
+      Volume: p.volume
+    }));
+  }, [progress]);
+
+  const durationData = useMemo(() => {
+    if (!progress) return [];
+    return progress.map(p => ({
+      date: new Date(p.date).toLocaleDateString('pt-BR', { month: 'short', day: 'numeric' }),
+      Duração: p.duration
+    }));
+  }, [progress]);
+
+
   return (
     <div className="space-y-6">
       <div>
@@ -109,7 +131,14 @@ export default function ProgressPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockProgress.slice().reverse().map((log, index) => (
+              {isLoading && (
+                <>
+                  <TableRow><TableCell colSpan={4}><Skeleton className="h-8" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4}><Skeleton className="h-8" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={4}><Skeleton className="h-8" /></TableCell></TableRow>
+                </>
+              )}
+              {progress && progress.slice().reverse().map((log, index) => (
                 <TableRow key={index}>
                   <TableCell className="font-medium">{new Date(log.date).toLocaleDateString('pt-BR')}</TableCell>
                   <TableCell>{log.workoutName}</TableCell>

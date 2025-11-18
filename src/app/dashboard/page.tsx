@@ -13,12 +13,13 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { BarChart as RechartsBarChart, XAxis, YAxis, Bar, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { mockProgress } from '@/lib/data';
 import { useAppContext } from '@/context/app-provider';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
-const chartData = mockProgress.slice(-7).map(p => ({ date: new Date(p.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit'}), volume: p.volume / 1000 }));
+import { useCollection, useFirestore } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import type { ProgressRecord } from '@/lib/types';
+import { useMemo } from 'react';
 
 const chartConfig = {
   volume: {
@@ -29,6 +30,23 @@ const chartConfig = {
 
 export default function DashboardPage() {
   const { user } = useAppContext();
+  const firestore = useFirestore();
+
+  const progressCollectionRef = useMemo(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, `users/${user.id}/workout_logs`);
+  }, [firestore, user]);
+
+  const { data: progress, isLoading: isProgressLoading } = useCollection<ProgressRecord>(progressCollectionRef);
+
+  const chartData = useMemo(() => {
+    if (!progress) return [];
+    return progress.slice(-7).map(p => ({ date: new Date(p.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit'}), volume: p.volume / 1000 }));
+  }, [progress]);
+
+  const totalWorkouts = progress?.length || 0;
+  const totalVolume = progress?.reduce((acc, p) => acc + p.volume, 0).toLocaleString('pt-BR') || '0';
+  const totalMinutes = progress?.reduce((acc, p) => acc + p.duration, 0) || 0;
 
   return (
     <div className="space-y-6">
@@ -46,9 +64,9 @@ export default function DashboardPage() {
             <Dumbbell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockProgress.length}</div>
+            <div className="text-2xl font-bold">{isProgressLoading ? '...' : totalWorkouts}</div>
             <p className="text-xs text-muted-foreground">
-              +2 no último mês
+              Continue assim!
             </p>
           </CardContent>
         </Card>
@@ -58,7 +76,7 @@ export default function DashboardPage() {
             <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockProgress.reduce((acc, p) => acc + p.volume, 0).toLocaleString('pt-BR')}</div>
+            <div className="text-2xl font-bold">{isProgressLoading ? '...' : totalVolume}</div>
             <p className="text-xs text-muted-foreground">
               +10% vs. último mês
             </p>
@@ -70,7 +88,7 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockProgress.reduce((acc, p) => acc + p.duration, 0)}</div>
+            <div className="text-2xl font-bold">{isProgressLoading ? '...' : totalMinutes}</div>
             <p className="text-xs text-muted-foreground">
               +15% vs. último mês
             </p>

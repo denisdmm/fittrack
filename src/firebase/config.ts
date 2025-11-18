@@ -1,3 +1,6 @@
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+
 export const firebaseConfig = {
   "projectId": "studio-6730412679-750b7",
   "appId": "1:1061617650558:web:cc3318e28048befeed012f",
@@ -6,3 +9,6 @@ export const firebaseConfig = {
   "measurementId": "",
   "messagingSenderId": "1061617650558"
 };
+
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const db = getFirestore(app);

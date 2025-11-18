@@ -4,7 +4,7 @@ import { doc } from 'firebase/firestore';
 import type { User as AuthUser } from 'firebase/auth';
 import { useUser as useAuthUser, useFirestore, useDoc } from '@/firebase';
 import type { User } from '@/lib/types';
-
+import { seedDatabase, seedUserSpecificData } from '@/lib/seed';
 
 export type Role = 'user' | 'admin';
 
@@ -29,9 +29,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { data: firestoreUser, isLoading: isFirestoreUserLoading } = useDoc<User>(userDocRef);
 
-  // The role is now primarily derived from the Firestore user data.
-  // We can maintain a local 'role' state for overrides or quick-switching in demos.
   const [role, setRole] = useState<Role>('user');
+
+  // Seed database effect
+  useEffect(() => {
+    async function runSeed() {
+        console.log("Checking if database needs to be seeded...");
+        await seedDatabase();
+    }
+    runSeed();
+  }, []);
+
+  // Seed user-specific data when user logs in
+  useEffect(() => {
+    async function runUserSeed() {
+        if (authUser?.uid) {
+            console.log(`Checking if user ${authUser.uid} needs data seeded...`);
+            await seedUserSpecificData(authUser.uid);
+        }
+    }
+    if (authUser) {
+        runUserSeed();
+    }
+  }, [authUser]);
+
 
   useEffect(() => {
     if (firestoreUser?.role) {
