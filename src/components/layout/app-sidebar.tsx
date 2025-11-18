@@ -8,6 +8,7 @@ import {
   Home,
   Settings,
   Users,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ const navItems = [
 
 const adminNavItems = [
   { href: '/dashboard/admin/users', icon: Users, label: 'Usuários' },
+  { href: '/dashboard/exercises', icon: Zap, label: 'Exercícios' },
 ];
 
 export function AppSidebar() {
@@ -33,7 +35,7 @@ export function AppSidebar() {
 
   const renderNavItem = (item: { href: string, icon: React.ElementType, label: string }) => {
     const Icon = item.icon;
-    const isActive = pathname === item.href;
+    const isActive = pathname.startsWith(item.href);
     return (
       <Link key={item.href} href={item.href}>
         <Button

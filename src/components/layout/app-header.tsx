@@ -10,7 +10,8 @@ import {
   Settings,
   Users,
   UserCheck,
-  UserCog
+  UserCog,
+  Zap,
 } from 'lucide-react';
 import Image from 'next/image';
 
@@ -38,10 +39,11 @@ const navItems = [
 
 const adminNavItems = [
   { href: '/dashboard/admin/users', icon: Users, label: 'Usuários' },
+  { href: '/dashboard/exercises', icon: Zap, label: 'Exercícios' },
 ];
 
 export function AppHeader() {
-    const { role, setRole, user } = useAppContext();
+    const { role, user } = useAppContext();
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 dark:bg-card">
