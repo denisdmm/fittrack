@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import type { Workout } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -25,7 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function WorkoutsPage() {
     const firestore = useFirestore();
 
-    const workoutsCollectionRef = useMemo(() => {
+    const workoutsCollectionRef = useMemoFirebase(() => {
         if (!firestore) return null;
         return collection(firestore, 'workout_routines_public');
     }, [firestore]);

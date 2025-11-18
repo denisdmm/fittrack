@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -30,14 +30,19 @@ import { UserForm } from './_components/user-form';
 import type { User } from '@/lib/types';
 import { useAppContext } from '@/context/app-provider';
 import Link from 'next/link';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AdminUsersPage() {
     const { role } = useAppContext();
     const firestore = useFirestore();
-    const usersRef = collection(firestore, 'users');
+
+    const usersRef = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'users');
+    }, [firestore]);
+    
     const { data: users, isLoading } = useCollection<User>(usersRef);
     
     const [isDialogOpen, setIsDialogOpen] = useState(false);

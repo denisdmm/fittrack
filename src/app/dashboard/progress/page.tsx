@@ -21,7 +21,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { ProgressRecord } from '@/lib/types';
 import { useAppContext } from '@/context/app-provider';
@@ -43,7 +43,7 @@ export default function ProgressPage() {
   const { user } = useAppContext();
   const firestore = useFirestore();
 
-  const progressCollectionRef = useMemo(() => {
+  const progressCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, `users/${user.id}/workout_logs`);
   }, [firestore, user]);

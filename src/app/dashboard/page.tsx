@@ -16,7 +16,7 @@ import { BarChart as RechartsBarChart, XAxis, YAxis, Bar, CartesianGrid, Respons
 import { useAppContext } from '@/context/app-provider';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useCollection, useFirestore } from '@/firebase';
+import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { ProgressRecord } from '@/lib/types';
 import { useMemo } from 'react';
@@ -32,7 +32,7 @@ export default function DashboardPage() {
   const { user } = useAppContext();
   const firestore = useFirestore();
 
-  const progressCollectionRef = useMemo(() => {
+  const progressCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, `users/${user.id}/workout_logs`);
   }, [firestore, user]);
