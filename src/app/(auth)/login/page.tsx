@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAppContext } from '@/context/app-provider';
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Por favor, insira um email válido." }),
+  username: z.string().min(1, { message: "O nome de usuário é obrigatório." }),
   password: z.string().min(1, { message: "A senha é obrigatória." }),
 })
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   })
@@ -53,7 +53,7 @@ export default function LoginPage() {
       description: "Redirecionando para o seu painel...",
     })
 
-    if (values.email === 'admin@fittrack.com' && values.password === 'admin') {
+    if (values.username === 'admin' && values.password === 'admin') {
       setRole('admin');
     } else {
       setRole('user');
@@ -76,12 +76,12 @@ export default function LoginPage() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Usuário</FormLabel>
                   <FormControl>
-                    <Input placeholder="seu@email.com" {...field} />
+                    <Input placeholder="seu.usuario" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -101,7 +101,7 @@ export default function LoginPage() {
               )}
             />
              <div className="text-xs text-muted-foreground">
-                Para demonstração: use <span className="font-bold">admin@fittrack.com</span> e senha <span className="font-bold">admin</span> para o acesso de administrador.
+                Para demonstração: use <span className="font-bold">admin</span> e senha <span className="font-bold">admin</span> para o acesso de administrador.
             </div>
             <Button type="submit" className="w-full">
               Login

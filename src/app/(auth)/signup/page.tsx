@@ -30,6 +30,7 @@ import { useAppContext } from '@/context/app-provider';
 const formSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
   lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
+  username: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
   email: z.string().email({ message: "Por favor, insira um email válido." }),
   password: z.string().min(8, { message: "A senha deve ter pelo menos 8 caracteres." }),
 })
@@ -45,6 +46,7 @@ export default function SignupPage() {
     defaultValues: {
       firstName: "",
       lastName: "",
+      username: "",
       email: "",
       password: "",
     },
@@ -104,6 +106,19 @@ export default function SignupPage() {
                   )}
                 />
               </div>
+               <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Usuário</FormLabel>
+                      <FormControl>
+                        <Input placeholder="joao.silva" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                <FormField
                   control={form.control}
                   name="email"

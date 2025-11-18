@@ -4,10 +4,10 @@ import { PlaceHolderImages } from './placeholder-images';
 export const placeholderImages = PlaceHolderImages;
 
 export const mockUsers: User[] = [
-  { id: '1', firstName: 'Admin', lastName: 'User', email: 'admin@fittrack.com', login: 'admin', role: 'admin' },
-  { id: '2', firstName: 'Alice', lastName: 'Johnson', email: 'alice@example.com', login: 'alice', role: 'user' },
-  { id: '3', firstName: 'Bob', lastName: 'Williams', email: 'bob@example.com', login: 'bob', role: 'user' },
-  { id: '4', firstName: 'Charlie', lastName: 'Brown', email: 'charlie@example.com', login: 'charlie', role: 'user' },
+  { id: '1', firstName: 'Admin', lastName: 'User', email: 'admin@fittrack.com', username: 'admin', role: 'admin' },
+  { id: '2', firstName: 'Alice', lastName: 'Johnson', email: 'alice@example.com', username: 'alice', role: 'user' },
+  { id: '3', firstName: 'Bob', lastName: 'Williams', email: 'bob@example.com', username: 'bob', role: 'user' },
+  { id: '4', firstName: 'Charlie', lastName: 'Brown', email: 'charlie@example.com', username: 'charlie', role: 'user' },
 ];
 
 const strengthImg = placeholderImages.find(p => p.id === 'workout-strength');

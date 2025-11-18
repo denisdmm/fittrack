@@ -87,6 +87,7 @@ export default function AdminUsersPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
+                  <TableHead>Usuário</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Função</TableHead>
                   <TableHead>
@@ -98,6 +99,7 @@ export default function AdminUsersPage() {
                 {mockUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
+                    <TableCell>{user.username}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'admin' ? 'destructive' : 'outline'}>{user.role}</Badge>
