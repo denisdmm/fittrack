@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview A secure flow to retrieve a user's email by their username.
+ * @fileOverview A secure flow to retrieve a user's email by their login username.
  *
  * - getUserEmail - A function that handles fetching the user's email.
  * - GetUserEmailInput - The input type for the getUserEmail function.
@@ -13,7 +13,7 @@ import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 
 const GetUserEmailInputSchema = z.object({
-  username: z.string().describe('The username to look up.'),
+  username: z.string().describe('The login username to look up.'),
 });
 export type GetUserEmailInput = z.infer<typeof GetUserEmailInputSchema>;
 
@@ -36,10 +36,12 @@ const getUserEmailFlow = ai.defineFlow(
   async (input) => {
     try {
       const usersRef = collection(db, "users");
-      const q = query(usersRef, where("username", "==", input.username), limit(1));
+      // Corrected to query by the 'login' field instead of 'username'
+      const q = query(usersRef, where("login", "==", input.username), limit(1));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
+        console.log(`getUserEmailFlow: No user found with login: ${input.username}`);
         return { email: null };
       }
 
@@ -47,9 +49,11 @@ const getUserEmailFlow = ai.defineFlow(
       const email = userData.email;
 
       if (!email || typeof email !== 'string') {
+        console.log(`getUserEmailFlow: User found but email is missing or invalid for login: ${input.username}`);
         return { email: null };
       }
-
+      
+      console.log(`getUserEmailFlow: Found email ${email} for login ${input.username}`);
       return { email };
 
     } catch (error) {
