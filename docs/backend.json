@@ -37,8 +37,7 @@
         "firstName",
         "lastName",
         "email",
-        "login",
-        "groupId"
+        "login"
       ]
     },
     "Group": {
