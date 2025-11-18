@@ -79,8 +79,6 @@ export default function SignupPage() {
       lastName: capitalize(values.lastName),
     };
     
-    // We'll construct an email from the username to use with Firebase Auth
-    // This is a common pattern when you want username-based login.
     const email = `${formattedValues.login.toLowerCase()}@fittrack.app`;
 
     try {
@@ -95,11 +93,10 @@ export default function SignupPage() {
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
         login: formattedValues.login,
-        email: email, // Store the generated email
-        role: 'user' as const, // Default role
+        email: email, 
+        role: 'user' as const,
       };
       
-      // Use blocking write here to ensure user doc is created before navigating
       await setDoc(userDocRef, userData);
 
       toast({

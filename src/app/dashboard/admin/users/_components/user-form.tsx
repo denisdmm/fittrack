@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +30,7 @@ interface UserFormProps {
 
 export function UserForm({ user, onFinished }: UserFormProps) {
     const { toast } = useToast();
+    const firestore = useFirestore();
     const [showPassword, setShowPassword] = useState(false);
 
     const formSchema = z.object({
@@ -55,18 +58,48 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
   }
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const formattedValues = {
         ...values,
         firstName: capitalize(values.firstName),
         lastName: capitalize(values.lastName),
     };
-    console.log(formattedValues);
-    toast({
-      title: user ? "Usuário Atualizado" : "Usuário Criado",
-      description: `O usuário ${values.firstName} foi ${user ? 'atualizado' : 'criado'} com sucesso.`,
-    });
-    onFinished();
+    
+    // This is a simplified example. In a real app, you would have a server-side
+    // function to create/update users to handle auth and prevent unauthorized role changes.
+    try {
+        if (user) {
+            // Update user
+            const userRef = doc(firestore, "users", user.id);
+            await setDoc(userRef, { 
+                firstName: formattedValues.firstName,
+                lastName: formattedValues.lastName,
+                login: formattedValues.login,
+                role: formattedValues.role,
+            }, { merge: true });
+            toast({
+                title: "Usuário Atualizado",
+                description: `O usuário ${values.firstName} foi atualizado com sucesso.`,
+            });
+        } else {
+            // Create user - This part is complex because it involves creating a Firebase Auth user
+            // and then a Firestore document. This should ideally be a server-side operation.
+            // For this UI, we'll just show the success toast.
+            console.log("Creating user:", formattedValues);
+             toast({
+                title: "Ação não implementada",
+                description: "A criação de usuários deve ser feita na tela de cadastro.",
+                variant: 'destructive'
+            });
+        }
+        onFinished();
+    } catch (error: any) {
+        toast({
+            title: "Erro",
+            description: `Ocorreu um erro: ${error.message}`,
+            variant: "destructive"
+        });
+    }
   }
 
   return (
@@ -125,6 +158,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                             type={showPassword ? "text" : "password"}
                             placeholder={user ? "Deixe em branco para não alterar" : "Senha"}
                             {...field}
+                            disabled={!!user} // Can't change password here for now
                         />
                          <button
                             type="button"
@@ -135,7 +169,9 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                           </button>
                     </div>
                 </FormControl>
-                {user && <FormDescription className="text-xs">Deixe em branco para não alterar a senha.</FormDescription>}
+                <FormDescription className="text-xs">
+                    {user ? "A alteração de senha deve ser feita pelo usuário." : "A senha é obrigatória para novos usuários."}
+                </FormDescription>
                 <FormMessage />
                 </FormItem>
             )}
