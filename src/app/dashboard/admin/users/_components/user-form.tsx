@@ -33,7 +33,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     const formSchema = z.object({
         firstName: z.string().min(1, { message: "O nome é obrigatório." }),
         lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
-        username: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
+        login: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
         password: user ? z.string().optional() : z.string().min(1, { message: "A senha é obrigatória." }),
         role: z.enum(['user', 'admin']),
       });
@@ -44,7 +44,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
-      username: user?.username || "",
+      login: user?.login || "",
       password: "",
       role: user?.role || "user",
     },
@@ -102,7 +102,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
         </div>
         <FormField
             control={form.control}
-            name="username"
+            name="login"
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Usuário</FormLabel>

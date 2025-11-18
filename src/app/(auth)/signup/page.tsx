@@ -35,7 +35,7 @@ import { Eye, EyeOff } from 'lucide-react';
 const formSchema = z.object({
   firstName: z.string().min(1, { message: "O nome é obrigatório." }),
   lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
-  username: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
+  login: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
   password: z.string().min(1, { message: "A senha é obrigatória." }),
 })
 
@@ -53,7 +53,7 @@ export default function SignupPage() {
     defaultValues: {
       firstName: "",
       lastName: "",
-      username: "",
+      login: "",
       password: "",
     },
   })
@@ -81,7 +81,7 @@ export default function SignupPage() {
     
     // We'll construct an email from the username to use with Firebase Auth
     // This is a common pattern when you want username-based login.
-    const email = `${formattedValues.username}@fittrack.app`;
+    const email = `${formattedValues.login}@fittrack.app`;
 
     try {
       // 1. Create user in Firebase Auth
@@ -94,7 +94,7 @@ export default function SignupPage() {
         id: user.uid,
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
-        username: formattedValues.username,
+        login: formattedValues.login,
         email: email, // Store the generated email
         role: 'user' as const, // Default role
       };
@@ -167,7 +167,7 @@ export default function SignupPage() {
               </div>
                <FormField
                   control={form.control}
-                  name="username"
+                  name="login"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Usuário</FormLabel>

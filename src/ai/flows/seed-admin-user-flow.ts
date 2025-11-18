@@ -27,12 +27,12 @@ const seedAdminUserFlow = ai.defineFlow(
   async () => {
     console.log("seedAdminUserFlow: Checking for admin user...");
 
-    const adminUsername = 'admin';
+    const adminLogin = 'admin';
     const adminEmail = 'admin@fittrack.app';
     const adminPassword = 'admin';
     
-    // Check if the user document already exists in Firestore
-    const userQuery = query(collection(db, "users"), where("username", "==", adminUsername));
+    // Check if the user document already exists in Firestore by the 'login' field
+    const userQuery = query(collection(db, "users"), where("login", "==", adminLogin));
     const userQuerySnapshot = await getDocs(userQuery);
 
     if (!userQuerySnapshot.empty) {
@@ -59,11 +59,12 @@ const seedAdminUserFlow = ai.defineFlow(
       console.log(`seedAdminUserFlow: Admin user created in Auth with UID: ${user.uid}`);
 
       const userDocRef = doc(db, 'users', user.uid);
+      // Correctly use 'login' field
       const userData = {
         id: user.uid,
         firstName: 'Admin',
         lastName: 'User',
-        username: adminUsername,
+        login: adminLogin,
         email: adminEmail,
         role: 'admin' as const,
       };

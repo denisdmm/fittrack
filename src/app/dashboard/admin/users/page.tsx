@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
                   <>
                     <TableRow>
                       <TableCell colSpan={5}><Skeleton className="h-8" /></TableCell>
-                    </TableRow>
+                    </tr-row>
                      <TableRow>
                       <TableCell colSpan={5}><Skeleton className="h-8" /></TableCell>
                     </TableRow>
@@ -120,7 +120,7 @@ export default function AdminUsersPage() {
                 {users && users.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
-                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.login}</TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge variant={user.role === 'admin' ? 'destructive' : 'outline'}>{user.role}</Badge>
