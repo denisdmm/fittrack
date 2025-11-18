@@ -27,7 +27,7 @@ import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from "@/hooks/use-toast"
 import { useAuth, useFirestore } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "O nome de usuário é obrigatório." }),
@@ -76,7 +76,7 @@ export default function LoginPage() {
       }
       
       // 2. Use email and password to sign in
-      initiateEmailSignIn(auth, email, values.password);
+      await signInWithEmailAndPassword(auth, email, values.password);
 
       toast({
         title: "Login bem-sucedido!",
@@ -90,7 +90,7 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Falha no Login",
-        description: error.message === 'Firebase: Error (auth/invalid-credential).' ? "Credenciais inválidas." : error.message,
+        description: error.message.includes('auth/invalid-credential') ? "Credenciais inválidas." : error.message,
       });
     }
   }

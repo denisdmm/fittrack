@@ -1,9 +1,14 @@
+
 'use server';
 
-import { collection, writeBatch, getDocs, doc } from 'firebase/firestore';
+import { collection, writeBatch, getDocs, doc, getDoc, setDoc } from 'firebase/firestore';
 import { exercises, workouts, progressRecords } from '@/lib/data';
 import { db } from '@/firebase/config';
-import { placeholderImages } from '@/lib/placeholder-images';
+import { placeholderImages } from './placeholder-images';
+import { initializeApp, getApps } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
+import { firebaseConfig } from '@/firebase/config';
+
 
 // Helper to get a random subset of items
 const getRandomSubarray = <T>(arr: T[], size: number): T[] => {
@@ -11,8 +16,71 @@ const getRandomSubarray = <T>(arr: T[], size: number): T[] => {
   return shuffled.slice(0, size);
 };
 
+// A separate, temporary Firebase App instance for admin actions during seed.
+const getSeedAdminApp = () => {
+    const apps = getApps();
+    const adminApp = apps.find(app => app.name === 'seedAdmin');
+    if (adminApp) {
+      return adminApp;
+    }
+    return initializeApp(firebaseConfig, 'seedAdmin');
+};
+
+async function createAdminUser() {
+    console.log("Checking for admin user...");
+    const adminApp = getSeedAdminApp();
+    const auth = getAuth(adminApp);
+    const adminEmail = 'admin@fittrack.app';
+    const adminPassword = 'admin';
+    const adminUsername = 'admin';
+
+    // Check if user document already exists in Firestore
+    // This is a simplified check. A more robust solution might query by email or username.
+    // For this seed script, we'll assume if any user exists, the admin might too.
+    // A better approach is to have a dedicated admin user creation flow or check.
+    // For demo purposes, we will try to create it and catch the error if it exists.
+    
+    try {
+        // First check if a user with this username exists in Firestore
+        const userQuerySnapshot = await getDocs(query(collection(db, "users"), where("username", "==", adminUsername)));
+        if (!userQuerySnapshot.empty) {
+            console.log("Admin user document already exists in Firestore. Skipping creation.");
+            return;
+        }
+
+        console.log("Attempting to create admin user in Firebase Auth...");
+        const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, adminPassword);
+        const user = userCredential.user;
+        console.log(`Admin user created in Auth with UID: ${user.uid}`);
+
+        // Now create the Firestore document
+        const userDocRef = doc(db, 'users', user.uid);
+        const userData = {
+            id: user.uid,
+            firstName: 'Admin',
+            lastName: 'User',
+            username: adminUsername,
+            email: adminEmail,
+            role: 'admin' as const,
+        };
+        await setDoc(userDocRef, userData);
+        console.log("Admin user document created in Firestore.");
+
+    } catch (error: any) {
+        if (error.code === 'auth/email-already-in-use') {
+            console.log("Admin user already exists in Firebase Auth. Skipping creation.");
+        } else {
+            console.error("Error creating admin user:", error);
+        }
+    }
+}
+
+
 export async function seedDatabase() {
     console.log("Starting to seed database...");
+
+    // Create admin user first
+    await createAdminUser();
 
     const exercisesCollection = collection(db, 'exercises');
     const workoutsCollection = collection(db, 'workout_routines_public');
@@ -22,7 +90,7 @@ export async function seedDatabase() {
     const workoutsSnapshot = await getDocs(workoutsCollection);
     
     if (!exercisesSnapshot.empty && !workoutsSnapshot.empty) {
-        console.log("Database already seeded. Skipping.");
+        console.log("Database already seeded with workouts/exercises. Skipping.");
         return { success: true, message: "Database already seeded." };
     }
     
