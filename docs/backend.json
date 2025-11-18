@@ -1,0 +1,310 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the FitTrack Firestore application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "login": {
+          "type": "string",
+          "description": "The login username of the user."
+        },
+        "groupId": {
+          "type": "string",
+          "description": "Reference to Group. (Relationship: Group 1:N User)"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "login",
+        "groupId"
+      ]
+    },
+    "Group": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Group",
+      "type": "object",
+      "description": "Represents a group of users with specific permissions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the group entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the user group."
+        },
+        "permissions": {
+          "type": "array",
+          "description": "List of permissions granted to the group.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "permissions"
+      ]
+    },
+    "WorkoutRoutine": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WorkoutRoutine",
+      "type": "object",
+      "description": "Represents a pre-defined or custom workout routine.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the workout routine."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the workout routine."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the workout routine."
+        },
+        "difficultyLevel": {
+          "type": "string",
+          "description": "The difficulty level of the workout routine (e.g., Beginner, Intermediate, Advanced)."
+        },
+        "exerciseIds": {
+          "type": "array",
+          "description": "References to Exercises. (Relationship: WorkoutRoutine 1:N Exercise)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N WorkoutRoutine).  If null, the routine is a pre-defined routine."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "difficultyLevel",
+        "exerciseIds"
+      ]
+    },
+    "Exercise": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Exercise",
+      "type": "object",
+      "description": "Represents a single exercise within a workout routine.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the exercise."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the exercise."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of how to perform the exercise."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of exercise (e.g., Strength, Cardio, Flexibility)."
+        },
+        "sets": {
+          "type": "number",
+          "description": "The number of sets for the exercise."
+        },
+        "reps": {
+          "type": "number",
+          "description": "The number of repetitions for each set."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "sets",
+        "reps"
+      ]
+    },
+    "WorkoutLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "WorkoutLog",
+      "type": "object",
+      "description": "Represents a user's completed workout session.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the workout log."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N WorkoutLog)"
+        },
+        "workoutRoutineId": {
+          "type": "string",
+          "description": "Reference to WorkoutRoutine. (Relationship: WorkoutRoutine 1:N WorkoutLog)"
+        },
+        "date": {
+          "type": "string",
+          "description": "The date the workout was completed.",
+          "format": "date-time"
+        },
+        "duration": {
+          "type": "number",
+          "description": "The duration of the workout in minutes."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any notes the user wants to record about the workout."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "workoutRoutineId",
+        "date",
+        "duration"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Uses path-based ownership for private data. Includes params to define the current user ID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/groups/{groupId}",
+        "definition": {
+          "entityName": "Group",
+          "schema": {
+            "$ref": "#/backend/entities/Group"
+          },
+          "description": "Stores group definitions. Includes params to define the current group ID.",
+          "params": [
+            {
+              "name": "groupId",
+              "description": "The unique identifier for the group."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/workout_routines_public/{workoutRoutineId}",
+        "definition": {
+          "entityName": "WorkoutRoutine",
+          "schema": {
+            "$ref": "#/backend/entities/WorkoutRoutine"
+          },
+          "description": "Stores public workout routines accessible to all users. Routines stored here do not have a userId, as they are public.",
+          "params": [
+            {
+              "name": "workoutRoutineId",
+              "description": "The unique identifier for the workout routine."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/workout_routines/{workoutRoutineId}",
+        "definition": {
+          "entityName": "WorkoutRoutine",
+          "schema": {
+            "$ref": "#/backend/entities/WorkoutRoutine"
+          },
+          "description": "Stores workout routines specific to a user. Uses path-based ownership. Includes params to define the current user and workout routine IDs.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "workoutRoutineId",
+              "description": "The unique identifier for the workout routine."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/exercises/{exerciseId}",
+        "definition": {
+          "entityName": "Exercise",
+          "schema": {
+            "$ref": "#/backend/entities/Exercise"
+          },
+          "description": "Stores information about individual exercises. All users will have read access. Includes params to define the current exercise ID.",
+          "params": [
+            {
+              "name": "exerciseId",
+              "description": "The unique identifier for the exercise."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/workout_logs/{workoutLogId}",
+        "definition": {
+          "entityName": "WorkoutLog",
+          "schema": {
+            "$ref": "#/backend/entities/WorkoutLog"
+          },
+          "description": "Stores workout logs for each user. Uses path-based ownership. Includes params to define the current user and workout log IDs.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "workoutLogId",
+              "description": "The unique identifier for the workout log."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to ensure secure and scalable data management for the FitTrack application. It prioritizes authorization independence and clear security rules. User data, workout routines, exercises, and workout logs are organized into collections that facilitate efficient querying and data retrieval. User specific data is stored under the /users/{userId} path to ensure easy management and secure access to each users data.  A Group collection holds group definitions. Public workout routines, accessible by all users, are stored in the /workout_routines_public collection, whereas personal routines are stored in the /users/{userId}/workout_routines collection, thus segregating public and private data.  Authorization Independence is achieved through path-based ownership for user-specific data and explicit membership maps (not applicable for this data structure, as groups do not contain members) for collaborative data, ensuring that security rules do not rely on hierarchical `get()` calls. QAPs (Rules are not Filters) are supported through structural segregation, preventing the mixing of data with different access needs within the same collection. This approach simplifies security rules and enhances overall security."
+  }
+}
