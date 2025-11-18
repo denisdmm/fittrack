@@ -6,6 +6,7 @@ export type User = {
   role: 'user' | 'admin';
   groupId?: string; 
   email?: string;
+  instagramUrl?: string;
 };
 
 export type Exercise = {

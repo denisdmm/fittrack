@@ -27,6 +27,11 @@
           "type": "string",
           "description": "The login username of the user."
         },
+        "instagramUrl": {
+            "type": "string",
+            "description": "The user's Instagram profile URL.",
+            "format": "uri"
+        },
         "groupId": {
           "type": "string",
           "description": "Reference to Group. (Relationship: Group 1:N User)"

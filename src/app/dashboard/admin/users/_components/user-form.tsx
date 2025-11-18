@@ -38,6 +38,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
         login: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
         password: user ? z.string().optional() : z.string().min(1, { message: "A senha é obrigatória." }),
         role: z.enum(['user', 'admin']),
+        instagramUrl: z.string().url({ message: "Por favor, insira uma URL válida." }).or(z.literal('')).optional(),
       });
       
 
@@ -49,6 +50,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
       login: user?.login || "",
       password: "",
       role: user?.role || "user",
+      instagramUrl: user?.instagramUrl || "",
     },
   });
 
@@ -75,6 +77,7 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 lastName: formattedValues.lastName,
                 login: formattedValues.login,
                 role: formattedValues.role,
+                instagramUrl: formattedValues.instagramUrl,
             }, { merge: true });
             toast({
                 title: "Usuário Atualizado",
@@ -140,6 +143,19 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 <FormLabel>Usuário</FormLabel>
                 <FormControl>
                     <Input placeholder="joao.silva" {...field} />
+                </FormControl>
+                <FormMessage />
+                </FormItem>
+            )}
+        />
+        <FormField
+            control={form.control}
+            name="instagramUrl"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Instagram URL</FormLabel>
+                <FormControl>
+                    <Input placeholder="https://instagram.com/seu_usuario" {...field} />
                 </FormControl>
                 <FormMessage />
                 </FormItem>
