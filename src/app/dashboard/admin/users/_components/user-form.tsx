@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useState } from 'react';
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from '@/lib/types';
+import { Eye, EyeOff } from "lucide-react";
 
 interface UserFormProps {
     user: User | null;
@@ -26,6 +28,7 @@ interface UserFormProps {
 
 export function UserForm({ user, onFinished }: UserFormProps) {
     const { toast } = useToast();
+    const [showPassword, setShowPassword] = useState(false);
 
     const formSchema = z.object({
         firstName: z.string().min(1, { message: "O nome é obrigatório." }),
@@ -117,7 +120,20 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 <FormItem>
                 <FormLabel>Senha</FormLabel>
                 <FormControl>
-                    <Input type="password" placeholder={user ? "Deixe em branco para não alterar" : "Senha"}/>
+                    <div className="relative">
+                        <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder={user ? "Deixe em branco para não alterar" : "Senha"}
+                            {...field}
+                        />
+                         <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                          >
+                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                          </button>
+                    </div>
                 </FormControl>
                 {user && <FormDescription className="text-xs">Deixe em branco para não alterar a senha.</FormDescription>}
                 <FormMessage />
