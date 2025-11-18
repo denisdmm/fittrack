@@ -53,9 +53,16 @@ export default function SignupPage() {
   })
  
   function onSubmit(values: z.infer<typeof formSchema>) {
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+    const formattedValues = {
+      ...values,
+      firstName: capitalize(values.firstName),
+      lastName: capitalize(values.lastName),
+    };
     // NOTE: This is a mock signup.
     // In a real app, you would use Firebase Auth to create a user.
-    console.log(values);
+    console.log(formattedValues);
     toast({
       title: "Conta criada com sucesso!",
       description: "Bem-vindo ao FitTrack! Redirecionando...",

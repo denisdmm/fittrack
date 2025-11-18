@@ -61,7 +61,14 @@ export default function ProfilePage() {
 
 
   function onProfileSubmit(values: z.infer<typeof profileFormSchema>) {
-    console.log(values);
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+    const formattedValues = {
+        ...values,
+        firstName: capitalize(values.firstName),
+        lastName: capitalize(values.lastName),
+    };
+    console.log(formattedValues);
     toast({
       title: "Perfil Atualizado",
       description: "Suas informações foram salvas com sucesso.",

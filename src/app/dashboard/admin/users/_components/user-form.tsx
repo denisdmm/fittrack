@@ -50,7 +50,14 @@ export function UserForm({ user, onFinished }: UserFormProps) {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+
+    const formattedValues = {
+        ...values,
+        firstName: capitalize(values.firstName),
+        lastName: capitalize(values.lastName),
+    };
+    console.log(formattedValues);
     toast({
       title: user ? "Usuário Atualizado" : "Usuário Criado",
       description: `O usuário ${values.firstName} foi ${user ? 'atualizado' : 'criado'} com sucesso.`,
