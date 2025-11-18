@@ -7,7 +7,7 @@
  * Data segregation between public and private workout routines is used.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles; owner-only access.
+ * - /users/{userId}: Stores user profiles; owner-only access for most operations.
  * - /groups/{groupId}: Stores group definitions; unrestricted access (prototype).
  * - /workout_routines_public/{workoutRoutineId}: Stores public workout routines; public read, owner-only write.
  * - /users/{userId}/workout_routines/{workoutRoutineId}: Stores user-specific workout routines; owner-only access.
@@ -15,26 +15,32 @@
  * - /users/{userId}/workout_logs/{workoutLogId}: Stores user workout logs; owner-only access.
  *
  * Key Security Decisions:
- * - User listing is disallowed.
+ * - User listing is disallowed for non-admins.
  * - Group access is unrestricted.
  * - Public workout routines have public read access but require user ownership for modifications.
  * - Exercises have public read access.
  *
  * Denormalization for Authorization:
  *  - The `userId` field is used within the workout_routines to establish owner-only writes and keep the structure simple.
+ *  - The `role` field in the user's document is checked for admin privileges.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     /**
-     * @description Secures user profiles, ensuring only the owner can read and write their own data.
+     * @description Secures user profiles, ensuring only the owner can read and write their own data. Admins can list users.
      * @path /users/{userId}
      * @allow (create) - Authenticated user with matching userId creates their profile.
      * @allow (get, update, delete) - Authenticated user with matching userId accesses their profile.
-     * @deny (create) - Authenticated user attempts to create a profile with a mismatched userId.
+     * @allow (list) - Admins can list all users.
+     * @deny (list) - Non-admins cannot list users.
      * @deny (get, update, delete) - Authenticated user attempts to access another user's profile.
-     * @principle Enforces document ownership for all operations.
+     * @principle Enforces document ownership and role-based access.
      */
     match /users/{userId} {
       function isOwner(userId) {
@@ -45,8 +51,8 @@ service cloud.firestore {
           return isOwner(userId) && resource != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if false;
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
       allow create: if true;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
