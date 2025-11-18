@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -26,8 +25,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from "@/hooks/use-toast"
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { getUserEmail } from '@/ai/flows/get-user-email-flow';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "O nome de usuário é obrigatório." }),
@@ -38,7 +38,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
-  const firestore = useFirestore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +48,7 @@ export default function LoginPage() {
   })
  
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!firestore || !auth) {
+    if (!auth) {
       toast({
         variant: "destructive",
         title: "Erro",
@@ -59,20 +58,13 @@ export default function LoginPage() {
     }
     
     try {
-      // 1. Find user by username to get their email
-      const usersRef = collection(firestore, "users");
-      const q = query(usersRef, where("username", "==", values.username), limit(1));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        throw new Error("Usuário não encontrado.");
-      }
-
-      const userData = querySnapshot.docs[0].data();
-      const email = userData.email;
+      // 1. Securely find user's email via Genkit flow
+      const result = await getUserEmail({ username: values.username });
+      
+      const email = result.email;
 
       if (!email) {
-        throw new Error("O usuário não possui um e-mail associado.");
+        throw new Error("Usuário não encontrado ou e-mail inválido.");
       }
       
       // 2. Use email and password to sign in
@@ -90,7 +82,7 @@ export default function LoginPage() {
       toast({
         variant: "destructive",
         title: "Falha no Login",
-        description: error.message.includes('auth/invalid-credential') ? "Credenciais inválidas." : error.message,
+        description: error.message.includes('auth/invalid-credential') ? "Credenciais inválidas." : "Usuário ou senha inválidos.",
       });
     }
   }
