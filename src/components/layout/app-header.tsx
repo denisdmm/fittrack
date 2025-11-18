@@ -30,7 +30,7 @@ import { Logo } from '../logo';
 import { useAppContext } from '@/context/app-provider';
 
 const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Dashboard' },
+  { href: '/dashboard', icon: Home, label: 'Painel' },
   { href: '/dashboard/workouts', icon: Dumbbell, label: 'Treinos' },
   { href: '/dashboard/progress', icon: BarChart3, label: 'Progresso' },
   { href: '/dashboard/profile', icon: Settings, label: 'Perfil' },
@@ -49,7 +49,7 @@ export function AppHeader() {
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle navigation menu</span>
+            <span className="sr-only">Alternar menu de navegação</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col">
@@ -105,7 +105,7 @@ export function AppHeader() {
                 className="rounded-full"
                 data-ai-hint="person portrait"
               />
-            <span className="sr-only">Toggle user menu</span>
+            <span className="sr-only">Alternar menu de usuário</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -127,7 +127,7 @@ export function AppHeader() {
             </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link href="/">Logout</Link>
+            <Link href="/">Sair</Link>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

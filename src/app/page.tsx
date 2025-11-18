@@ -15,7 +15,7 @@ export default function LandingPage() {
     },
     {
       icon: <BarChart className="h-8 w-8 text-primary" />,
-      title: 'Rastreamento de Progresso',
+      title: 'Acompanhamento de Progresso',
       description: 'Registre seus treinos e visualize seu progresso com gráficos e tabelas detalhados.',
     },
     {
@@ -37,7 +37,7 @@ export default function LandingPage() {
         <nav className="ml-auto flex gap-4 sm:gap-6">
           <Button variant="ghost" asChild>
             <Link href="/login">
-              Login
+              Entrar
             </Link>
           </Button>
           <Button asChild>
@@ -75,7 +75,7 @@ export default function LandingPage() {
                     </Link>
                   </Button>
                   <Button size="lg" variant="outline">
-                    Aprenda Mais
+                    Saiba Mais
                   </Button>
                 </div>
               </div>
@@ -89,7 +89,7 @@ export default function LandingPage() {
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">Recursos Principais</div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">Mais Rápido, Melhor, Mais Forte</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  FitTrack Firestore fornece as ferramentas que você precisa para ter sucesso em sua jornada de fitness.
+                  O FitTrack Firestore fornece as ferramentas que você precisa para ter sucesso em sua jornada de fitness.
                 </p>
               </div>
             </div>

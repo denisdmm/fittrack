@@ -17,7 +17,7 @@ import { Badge } from '../ui/badge';
 
 
 const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Dashboard' },
+  { href: '/dashboard', icon: Home, label: 'Painel' },
   { href: '/dashboard/workouts', icon: Dumbbell, label: 'Treinos' },
   { href: '/dashboard/progress', icon: BarChart3, label: 'Progresso' },
   { href: '/dashboard/profile', icon: Settings, label: 'Perfil' },
