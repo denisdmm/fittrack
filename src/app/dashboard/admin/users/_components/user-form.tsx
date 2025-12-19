@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from 'react';
-import { doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { db } from '@/firebase/config';
 
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import type { User } from '@/lib/types';
+import type { User, WorkoutPlan } from '@/lib/types';
 import { Eye, EyeOff } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { createUser, CreateUserInput, CreateUserInputSchema } from "@/ai/flows/create-user-flow";
+import { getFormSchema } from "@/lib/schemas/user-schema";
 
 interface UserFormProps {
     user: User | null;
@@ -31,16 +34,17 @@ interface UserFormProps {
 export function UserForm({ user, onFinished }: UserFormProps) {
     const { toast } = useToast();
     const [showPassword, setShowPassword] = useState(false);
+    const firestore = useFirestore();
 
-    const formSchema = z.object({
-        firstName: z.string().min(1, { message: "O nome é obrigatório." }),
-        lastName: z.string().min(1, { message: "O sobrenome é obrigatório." }),
-        login: z.string().min(3, { message: "O nome de usuário deve ter pelo menos 3 caracteres." }),
-        password: user ? z.string().optional() : z.string().min(1, { message: "A senha é obrigatória." }),
-        role: z.enum(['user', 'admin']),
-        instagramUrl: z.string().url({ message: "Por favor, insira uma URL válida." }).or(z.literal('')).optional(),
-      });
+    const isEditing = !!user;
+    const formSchema = getFormSchema(isEditing);
       
+    const plansRef = useMemoFirebase(() => {
+        if (!firestore) return null;
+        return collection(firestore, 'workout_routines_public');
+    }, [firestore]);
+    
+    const { data: workoutPlans, isLoading: arePlansLoading } = useCollection<WorkoutPlan>(plansRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,7 +54,9 @@ export function UserForm({ user, onFinished }: UserFormProps) {
       login: user?.login || "",
       password: "",
       role: user?.role || "user",
+      status: user?.status || "active",
       instagramUrl: user?.instagramUrl || "",
+      activeWorkoutPlanId: user?.activeWorkoutPlanId || "",
     },
   });
 
@@ -64,10 +70,9 @@ export function UserForm({ user, onFinished }: UserFormProps) {
         ...values,
         firstName: capitalize(values.firstName),
         lastName: capitalize(values.lastName),
+        login: values.login.toLowerCase(),
     };
     
-    // This is a simplified example. In a real app, you would have a server-side
-    // function to create/update users to handle auth and prevent unauthorized role changes.
     try {
         if (user) {
             // Update user
@@ -77,22 +82,25 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 lastName: formattedValues.lastName,
                 login: formattedValues.login,
                 role: formattedValues.role,
+                status: formattedValues.status,
                 instagramUrl: formattedValues.instagramUrl,
+                activeWorkoutPlanId: formattedValues.activeWorkoutPlanId === 'none' ? '' : formattedValues.activeWorkoutPlanId,
             }, { merge: true });
             toast({
                 title: "Usuário Atualizado",
                 description: `O usuário ${values.firstName} foi atualizado com sucesso.`,
             });
         } else {
-            // Create user - This part is complex because it involves creating a Firebase Auth user
-            // and then a Firestore document. This should ideally be a server-side operation.
-            // For this UI, we'll just show the success toast.
-            console.log("Creating user:", formattedValues);
-             toast({
-                title: "Ação não implementada",
-                description: "A criação de usuários deve ser feita na tela de cadastro.",
-                variant: 'destructive'
-            });
+            // Create user - password is known to be a string here due to schema logic
+            const result = await createUser(formattedValues as CreateUserInput);
+            if (result.success) {
+                toast({
+                    title: "Usuário Criado",
+                    description: `O usuário ${formattedValues.firstName} foi criado com sucesso.`,
+                });
+            } else {
+                throw new Error(result.message);
+            }
         }
         onFinished();
     } catch (error: any) {
@@ -142,8 +150,11 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 <FormItem>
                 <FormLabel>Usuário</FormLabel>
                 <FormControl>
-                    <Input placeholder="joao.silva" {...field} />
+                    <Input placeholder="joao.silva" {...field} disabled={!!user} />
                 </FormControl>
+                 <FormDescription className="text-xs">
+                    {user ? "O nome de usuário não pode ser alterado." : "Será usado para o login. Ex: joao.silva"}
+                </FormDescription>
                 <FormMessage />
                 </FormItem>
             )}
@@ -161,57 +172,102 @@ export function UserForm({ user, onFinished }: UserFormProps) {
                 </FormItem>
             )}
         />
+        {!user && (
+          <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                  <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                      <div className="relative">
+                          <Input
+                              type={showPassword ? "text" : "password"}
+                              placeholder={"Senha com no mínimo 6 caracteres"}
+                              {...field}
+                          />
+                          <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
+                            >
+                              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                      </div>
+                  </FormControl>
+                  <FormMessage />
+                  </FormItem>
+              )}
+          />
+        )}
+        <div className="grid grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Função</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma função" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="user">Usuário</SelectItem>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione um status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="active">Ativo</SelectItem>
+                            <SelectItem value="inactive">Inativo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
         <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Senha</FormLabel>
-                <FormControl>
-                    <div className="relative">
-                        <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder={user ? "Deixe em branco para não alterar" : "Senha"}
-                            {...field}
-                            disabled={!!user} // Can't change password here for now
-                        />
-                         <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                          >
-                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                          </button>
-                    </div>
-                </FormControl>
-                <FormDescription className="text-xs">
-                    {user ? "A alteração de senha deve ser feita pelo usuário." : "A senha é obrigatória para novos usuários."}
-                </FormDescription>
+        control={form.control}
+        name="activeWorkoutPlanId"
+        render={({ field }) => (
+            <FormItem>
+                <FormLabel>Plano de Treino Ativo</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value || 'none'} disabled={arePlansLoading}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Selecione um plano de treino" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    <SelectItem value="none">Nenhum</SelectItem>
+                    {workoutPlans?.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>{plan.name}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                <FormDescription className="text-xs">Atribua um plano de treino ativo para este usuário.</FormDescription>
                 <FormMessage />
-                </FormItem>
-            )}
+            </FormItem>
+        )}
         />
-        <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Função</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma função" />
-                        </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                        <SelectItem value="user">Usuário</SelectItem>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-            )}
-         />
         <div className="flex justify-end">
             <Button type="submit">Salvar</Button>
         </div>

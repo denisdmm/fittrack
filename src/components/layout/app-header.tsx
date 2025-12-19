@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Image from 'next/image';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -32,22 +33,29 @@ import { useAppContext } from '@/context/app-provider';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Painel' },
-  { href: '/dashboard/workouts', icon: Dumbbell, label: 'Treinos' },
+  { href: '/dashboard/athlete/workouts', icon: Dumbbell, label: 'Treinos' },
   { href: '/dashboard/progress', icon: BarChart3, label: 'Progresso' },
   { href: '/dashboard/profile', icon: Settings, label: 'Perfil' },
 ];
 
 const adminNavItems = [
   { href: '/dashboard/admin/users', icon: Users, label: 'Usuários' },
+  { href: '/dashboard/admin/workouts', icon: Dumbbell, label: 'Gerenciar Treinos' },
   { href: '/dashboard/exercises', icon: Zap, label: 'Exercícios' },
 ];
 
 export function AppHeader() {
     const { role, user } = useAppContext();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const handleLinkClick = () => {
+      setIsMobileMenuOpen(false);
+    };
+
 
   return (
     <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 dark:bg-card">
-      <Sheet>
+      <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetTrigger asChild>
           <Button variant="outline" size="icon" className="shrink-0 md:hidden">
             <Menu className="h-5 w-5" />
@@ -57,7 +65,8 @@ export function AppHeader() {
         <SheetContent side="left" className="flex flex-col">
           <nav className="grid gap-2 text-lg font-medium">
             <Link
-              href="#"
+              href="/dashboard"
+              onClick={handleLinkClick}
               className="flex items-center gap-2 text-lg font-semibold mb-4"
             >
               <Logo />
@@ -67,6 +76,7 @@ export function AppHeader() {
                 <Link
                 key={item.label}
                 href={item.href}
+                onClick={handleLinkClick}
                 className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                 >
                 <item.icon className="h-5 w-5" />
@@ -80,6 +90,7 @@ export function AppHeader() {
                     <Link
                     key={item.label}
                     href={item.href}
+                    onClick={handleLinkClick}
                     className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground"
                     >
                     <item.icon className="h-5 w-5" />

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -35,6 +36,24 @@
         "groupId": {
           "type": "string",
           "description": "Reference to Group. (Relationship: Group 1:N User)"
+        },
+        "activeWorkoutPlanId": {
+            "type": "string",
+            "description": "The ID of the user's currently active workout plan."
+        },
+        "birthDate": {
+          "type": "string",
+          "description": "The user's date of birth in YYYY-MM-DD format.",
+          "format": "date"
+        },
+        "height": {
+            "type": "number",
+            "description": "The user's height in centimeters."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the user account (e.g., active, inactive).",
+          "enum": ["active", "inactive"]
         }
       },
       "required": [
@@ -42,7 +61,8 @@
         "firstName",
         "lastName",
         "login",
-        "email"
+        "email",
+        "status"
       ]
     },
     "Group": {
@@ -129,6 +149,13 @@
           "type": "string",
           "description": "The name of the exercise."
         },
+        "aliases": {
+          "type": "array",
+          "description": "Alternative names for the exercise.",
+          "items": {
+            "type": "string"
+          }
+        },
         "description": {
           "type": "string",
           "description": "A description of how to perform the exercise."
@@ -137,6 +164,11 @@
           "type": "string",
           "description": "The type of exercise (e.g., Strength, Cardio, Flexibility)."
         },
+        "equipment": {
+            "type": "string",
+            "description": "The equipment needed for the exercise (e.g., Calistenia, Aparelhos, Livres, Ambos).",
+            "enum": ["Calistenia", "Aparelhos", "Livres", "Ambos"]
+        },
         "sets": {
           "type": "number",
           "description": "The number of sets for the exercise."
@@ -144,6 +176,10 @@
         "reps": {
           "type": "number",
           "description": "The number of repetitions for each set."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User who created the exercise. (Relationship: User 1:N Exercise)."
         }
       },
       "required": [
@@ -151,6 +187,7 @@
         "name",
         "description",
         "type",
+        "equipment",
         "sets",
         "reps"
       ]
@@ -193,6 +230,37 @@
         "workoutRoutineId",
         "date",
         "duration"
+      ]
+    },
+    "HealthLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "HealthLog",
+      "type": "object",
+      "description": "Represents a log of a user's health metrics at a specific point in time.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the health log."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N HealthLog)"
+        },
+        "date": {
+          "type": "string",
+          "description": "The date the health metric was recorded.",
+          "format": "date-time"
+        },
+        "weight": {
+          "type": "number",
+          "description": "The user's weight in kilograms."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "date",
+        "weight"
       ]
     }
   },
@@ -307,8 +375,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/health_logs/{healthLogId}",
+        "definition": {
+          "entityName": "HealthLog",
+          "schema": {
+            "$ref": "#/backend/entities/HealthLog"
+          },
+          "description": "Stores a historical log of health metrics (like weight) for a user. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "healthLogId",
+              "description": "The unique identifier for the health log."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure secure and scalable data management for the FitTrack application. It prioritizes authorization independence and clear security rules. User data, workout routines, exercises, and workout logs are organized into collections that facilitate efficient querying and data retrieval. User specific data is stored under the /users/{userId} path to ensure easy management and secure access to each users data.  A Group collection holds group definitions. Public workout routines, accessible by all users, are stored in the /workout_routines_public collection, whereas personal routines are stored in the /users/{userId}/workout_routines collection, thus segregating public and private data.  Authorization Independence is achieved through path-based ownership for user-specific data and explicit membership maps (not applicable for this data structure, as groups do not contain members) for collaborative data, ensuring that security rules do not rely on hierarchical `get()` calls. QAPs (Rules are not Filters) are supported through structural segregation, preventing the mixing of data with different access needs within the same collection. This approach simplifies security rules and enhances overall security."
+    "reasoning": "The Firestore structure is designed to ensure secure and scalable data management for the FitTrack application. It prioritizes authorization independence and clear security rules. User data, workout routines, exercises, and workout logs are organized into collections that facilitate efficient querying and data retrieval. User specific data is stored under the /users/{userId} path to ensure easy management and secure access to each users data. A Group collection holds group definitions. Public workout routines, accessible by all users, are stored in the /workout_routines_public collection, whereas personal routines are stored in the /users/{userId}/workout_routines collection, thus segregating public and private data. A new `health_logs` sub-collection under each user will store time-series health data like weight. Authorization Independence is achieved through path-based ownership for user-specific data and explicit membership maps (not applicable for this data structure, as groups do not contain members) for collaborative data, ensuring that security rules do not rely on hierarchical `get()` calls. QAPs (Rules are not Filters) are supported through structural segregation, preventing the mixing of data with different access needs within the same collection. This approach simplifies security rules and enhances overall security."
   }
 }

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDocs, query, collection, where } from 'firebase/firestore';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -77,33 +77,51 @@ export default function SignupPage() {
       ...values,
       firstName: capitalize(values.firstName),
       lastName: capitalize(values.lastName),
+      login: values.login.toLowerCase(),
     };
     
-    const email = `${formattedValues.login.toLowerCase()}@fittrack.app`;
+    const email = `${formattedValues.login}@fittrack.app`;
 
     try {
+        // Check if login (username) already exists
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where("login", "==", formattedValues.login));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            toast({
+                variant: "destructive",
+                title: "Falha no Cadastro",
+                description: "Este nome de usuário já está em uso. Tente outro.",
+            });
+            return;
+        }
+
       // 1. Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, formattedValues.password);
       const user = userCredential.user;
 
-      // 2. Create user document in Firestore
+      // 2. Create user document in Firestore with 'inactive' status
       const userDocRef = doc(firestore, 'users', user.uid);
       const userData = {
         id: user.uid,
         firstName: formattedValues.firstName,
         lastName: formattedValues.lastName,
         login: formattedValues.login,
+        email: email,
         role: 'user' as const,
+        status: 'inactive' as const, // New users start as inactive
       };
       
       await setDoc(userDocRef, userData);
 
       toast({
         title: "Conta criada com sucesso!",
-        description: "Bem-vindo ao FitTrack! Redirecionando...",
+        description: "Sua conta está aguardando aprovação de um administrador.",
       });
 
-      router.push('/dashboard');
+      // Redirect to login page instead of dashboard
+      router.push('/login');
 
     } catch (error: any) {
       console.error("Signup failed:", error);

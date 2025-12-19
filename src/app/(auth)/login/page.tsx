@@ -26,9 +26,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Logo } from '@/components/logo';
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Eye, EyeOff } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import type { User } from '@/lib/types';
 
 const formSchema = z.object({
   username: z.string().min(1, { message: "O nome de usuário é obrigatório." }),
@@ -39,6 +41,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const firestore = useFirestore();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,7 +53,7 @@ export default function LoginPage() {
   })
  
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!auth) {
+    if (!auth || !firestore) {
       toast({
         variant: "destructive",
         title: "Erro",
@@ -62,7 +65,29 @@ export default function LoginPage() {
     try {
       const email = `${values.username.toLowerCase()}@fittrack.app`;
       
-      await signInWithEmailAndPassword(auth, email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, values.password);
+
+      // After successful authentication, check user status in Firestore
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+        throw new Error("Documento do usuário não encontrado no Firestore.");
+      }
+
+      const userData = userDoc.data() as User;
+
+      if (userData.status === 'inactive') {
+        // If user is inactive, sign them out and show a message
+        await auth.signOut();
+        toast({
+          variant: "destructive",
+          title: "Conta Inativa",
+          description: "Sua conta está aguardando aprovação de um administrador.",
+          duration: 5000,
+        });
+        return;
+      }
 
       toast({
         title: "Login bem-sucedido!",
