@@ -1,6 +1,5 @@
 'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Image from "next/image";
@@ -85,7 +84,6 @@ export default function ProfilePage() {
 
   // --- Forms ---
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
-    resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
@@ -93,7 +91,6 @@ export default function ProfilePage() {
   });
 
   const healthForm = useForm<z.infer<typeof healthFormSchema>>({
-    resolver: zodResolver(healthFormSchema),
     defaultValues: {
         birthDate: user?.birthDate || "",
         height: user?.height || undefined,
@@ -102,7 +99,6 @@ export default function ProfilePage() {
   });
 
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
-    resolver: zodResolver(passwordFormSchema),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -333,7 +329,7 @@ export default function ProfilePage() {
                             )}
                         />
                         <FormField
-                            control={healthForm.control}
+                            control={form.control}
                             name="weight"
                             render={({ field }) => (
                                 <FormItem>

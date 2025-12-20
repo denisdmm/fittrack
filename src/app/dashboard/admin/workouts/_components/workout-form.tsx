@@ -1,6 +1,5 @@
 'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import * as z from "zod";
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
@@ -64,7 +63,6 @@ export function WorkoutForm({ workoutPlan, onFinished }: WorkoutFormProps) {
     const [newSessionTag, setNewSessionTag] = useState<SessionTag | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
             description: "",

@@ -3,7 +3,6 @@
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection } from 'firebase/firestore';
 import { useMemo, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import type { Exercise, SessionExercise } from "@/lib/types";
@@ -47,7 +46,6 @@ export function ExercisePicker({ initialExercises, onSave }: ExercisePickerProps
     const [configuringExercise, setConfiguringExercise] = useState<Exercise | null>(null);
 
     const form = useForm<z.infer<typeof seriesRepsSchema>>({
-        resolver: zodResolver(seriesRepsSchema),
         defaultValues: {
             series: [{ value: "" }],
         }

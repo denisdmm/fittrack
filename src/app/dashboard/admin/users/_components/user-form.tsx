@@ -1,6 +1,5 @@
 'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useState } from 'react';
@@ -47,7 +46,6 @@ export function UserForm({ user, onFinished }: UserFormProps) {
     const { data: workoutPlans, isLoading: arePlansLoading } = useCollection<WorkoutPlan>(plansRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",

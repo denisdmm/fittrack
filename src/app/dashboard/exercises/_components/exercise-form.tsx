@@ -1,6 +1,5 @@
 'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
@@ -47,7 +46,6 @@ export function ExerciseForm({ exercise, isDuplicating, onFinished, allExercises
     const [originalName, setOriginalName] = useState<string | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
         defaultValues: {
             name: exercise?.name || "",
             aliases: exercise?.aliases?.join(', ') || "",
