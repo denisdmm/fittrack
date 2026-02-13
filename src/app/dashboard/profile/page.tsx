@@ -329,7 +329,7 @@ export default function ProfilePage() {
                             )}
                         />
                         <FormField
-                            control={form.control}
+                            control={healthForm.control}
                             name="weight"
                             render={({ field }) => (
                                 <FormItem>
